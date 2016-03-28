@@ -1,11 +1,11 @@
 /*jshint node: true, jquery: true*/
 /* globals brackets, define, Mustache */
 /*!
- * Brackets Todo 0.5.3
- * Display all todo comments in current document or project.
+ * SQL Connector & Browser 0.3.0
  *
- * @author Mikael Jorhult
- * @license http://mikaeljorhult.mit-license.org MIT
+ * @author Alê Monteiro
+ * @license MIT
+ * @home https://github.com/alemonteiro/brackets-sql-connector
  */
 define(function (require, exports, module) {
 	'use strict';
@@ -31,19 +31,12 @@ define(function (require, exports, module) {
 		StatusBar = brackets.getModule('widgets/StatusBar'),
 		
 		// Extension basics.
-		COMMAND_ID = 'alemonteiro.bracketsSqlConnector.enable',
-		COMMAND_ID_LIST_TABLES = 'alemonteiro.bracketsSqlConnector.listTables',
-		COMMAND_ID_EXECUTE_CURRENT = 'alemonteiro.bracketsSqlConnector.executeCurrent',
-		COMMAND_ID_EXECUTE_CURRENT_FILE = 'alemonteiro.bracketsSqlConnector.executeCurrentFile',
-		COMMAND_ID_CONNECTIONS = 'alemonteiro.bracketsSqlConnector.manageConnections',
-		COMMAND_ID_TOGGLE_RESULT_PANE = 'alemonteiro.bracketsSqlConnector.toggleResultPane',
-		COMMAND_ID_DISCONNECT_ALL = 'alemonteiro.bracketsSqlConnector.disconnectAll',
-		COMMAND_ID_VIEW_LOG = 'alemonteiro.bracketsSqlConnector.viewLog',
-		
 		Strings = require('modules/Strings'),
 		dataStorage = require('modules/DataStorageManager'),
 		settingsDialog = require('modules/SettingsDialog'),
-
+		ResultSets = require('modules/ResultSets'),
+		Cmds = require('modules/SqlConnectorCommands'),
+		
 		// Preferences.
 		preferences = PreferencesManager.getExtensionPrefs('alemonteiro.bracketsSqlConnector'),
 
@@ -67,104 +60,23 @@ define(function (require, exports, module) {
 		menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU),
 		contextMenu = Menus.getContextMenu(Menus.ContextMenuIds.PROJECT_MENU),
 		is_connected = false,
+		is_extension_enabled = true,
 		is_result_pane_enabled = false,
+		is_browser_pane_enabled = false,
 		
 		// Get Node module domain
 		_domainPath = ExtensionUtils.getModulePath(module, "node/SQLConnectorDomain"),
 		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath),
-		
+
+		// Current Status vars
 		_current_server_id,
-		
-		// Result Sets Utils
-		ResultSets =((function() {
-			
-			var ids = 0,
-				prefix = "brackets-sql-connector-result-set-",
-				
-				add_achor = function(id) {
-					var li = '<li class="active">' +
-									'<a href="#" class="tab-anchor" data-target="#'+prefix + id +'">' + Strings.RESULT_SET + ' '  + id +'</a>' +
-									'<a href="#" class="close close-result-set">&times;</a>' +
-							'</li>';
-					
-					
-					$("#brackets-sql-connector-log-pane-anchor").removeClass("active").siblings().removeClass('active');
-					$("#brackets-sql-connector-log-pane-anchor").after($(li).addClass('active'));
-				},
-				
-				add_log = function(title, extra) {
-					var dt = new Date(),
-						str = typeof extra === 'string' ? extra :
-								(typeof extra=== 'object' ? JSON.stringify(extra) : ''),
-						log = '<li>'+
-								'<span class="data">' + dt.toLocaleTimeString() + '</span>' +
-								'<label>' + title + '</label>' +
-								'<span class="extra">' + str + '</span>' +
-							'</li>';
-					
-					$("#brackets-sql-connector-log-pane > ul").prepend(log);
-				},
-				
-				add_result = function(fields, rows, query, error) {
-					
-					if ( error ) {
-						add_log('Error', error);
-						return;
-					}
-					
-					if ( fields === null && typeof rows === 'object' ) {
-						add_log(Strings.QUERY_COMPLETED + ": " + rows.message);
-						CommandManager.execute(COMMAND_ID_VIEW_LOG);
-						return;
-					}
-					
-					ids = ids + 1;
-					var cid = ids,
-						$pane = $(Mustache.render(queryResultSetTemplate, {
-							Strings: Strings,
-							Id: cid
-						})),
-						$tbl = $('table', $pane),
-						i=0,il=fields.length,f,
-						j=0,jl=rows.length,r,
-						html = '';
-
-						for(;i<il;i++) {
-							f = fields[i];
-							html += '<th>' + (f.name||f.Field) + '</th>';
-						}
-						$("thead", $tbl).html('<tr>'+html+'</tr>');
-						html = '';
-
-						for(;j<jl;j++) {
-							html += '<tr>';
-							r = rows[j];
-							for(i = 0;i<il;i++) {
-								f = fields[i];
-								html += '<td>' + r[(f.name||f.Field)] + '</td>';
-							}
-							html += '</tr>';
-						}
-						$("tbody", $tbl).html(html);
-					
-						add_log(Strings.QUERY_COMPLETED + ' ' + fields.length + ' fields, ' + rows.length + ' rows');
-						add_achor(cid);
-						$("#brackets-sql-connector-log-pane").removeClass("active").siblings().removeClass('active');
-						$("#brackets-sql-connector-log-pane").after($pane.addClass('active'));
-					
-					toogleQueryResultPane(true);
-				};
-			
-			return {
-				add: add_result,
-				log: add_log
-			};
-			
-		})());
+		new_files_count = 0;
 
 	// Define preferences.
-	preferences.definePreference('enabled', 'boolean', false);
-
+	
+	preferences.definePreference('enabled', 'boolean', true);
+	preferences.definePreference('browserPanelEnabled', 'boolean', false);
+	preferences.definePreference('resultPanelEnabled', 'boolean', false);
 
 	// Load stylesheet.
 	ExtensionUtils.loadStyleSheet(module, 'sql-connector.css');
@@ -172,7 +84,7 @@ define(function (require, exports, module) {
 	/**
 	 * Get saved server list 
 	 */
-	function getServerList() {
+	function getSavedConfig() {
 		var serverInfo = dataStorage.get('server_list');
 		
 		return serverInfo;
@@ -204,7 +116,7 @@ define(function (require, exports, module) {
 	* Check if any connections are active
 	*/
 	function hasActiveConnection() {
-		var cfg = getServerList(),
+		var cfg = getSavedConfig(),
 			hasConn = false;
 		for(var s in cfg.servers ) {
 			if ( cfg.servers[s].__connection_id > 0 ) {
@@ -213,6 +125,22 @@ define(function (require, exports, module) {
 			}
 		}
 		return hasConn;
+	}
+	
+	/**
+	* Inflated and append server connection to browser panel
+	*/
+	function showServerConnection(serverInfo) {
+		var panelHTML = Mustache.render(connectedServerTemplate, {
+			Strings: Strings,
+			Server: serverInfo,
+			Label: serverInfo.name
+		}),
+		$li = $('ul.connections > li[data-server-id="'+serverInfo.__id+'"]', $browserPanel);
+		if ( $li.length > 0 ) {
+			$li.remove();	
+		}
+		$('ul.connections', $browserPanel).append(panelHTML);
 	}
 	
 	/**
@@ -259,62 +187,111 @@ define(function (require, exports, module) {
 	}
 		
 	/**
+	* Check on node domain the active connections
+	*/
+	function checkActiveConnections() {
+		var is_selected_connected = false,
+			has_connected = false,
+			last_connected_id,
+			cfg = getSavedConfig();
+		
+		for(var sid in cfg.servers) cfg.servers[sid].__connection_id = 0;
+		
+		dataStorage.set('server_list', cfg);
+		
+		$('ul.connections', $browserPanel).empty();
+		
+		_nodeDomain.exec("list_connections").done(function(arr) {
+			if ( arr.length === 0 ) {
+				setSelectedServer(false);
+			}
+			else {
+				cfg = getSavedConfig();
+				has_connected= true;
+				for(var i=0,il=arr.length, id;i<il;i++) {
+					id = arr[i];
+					if ( cfg.servers[id] !== undefined ) {
+						cfg.servers[id].__connection_id = id;
+						showServerConnection(cfg.servers[id]);
+						last_connected_id = id;
+						if ( cfg.selected_id == id) {
+							is_selected_connected = true;
+							_current_server_id = id;
+							setSelectedServer(id);
+						}
+					}
+				}
+				dataStorage.set('server_list', cfg);
+				if( !is_selected_connected && has_connected ) {
+					setSelectedServer(last_connected_id);
+				}
+			}
+		}).fail(function(err) {
+			ResultSets.log('Get Active Connections', err);
+		});
+	}
+	
+	/**
+	* TOGGLE Extension Active/Deactive
+	*/
+	function toggleExtension(enabled) {
+		enabled = enabled === undefined ? !is_extension_enabled : enabled;
+		preferences.set('enabled', enabled);
+		is_extension_enabled = enabled;
+	}
+	
+	/**
+	* Resize Browser Panel
+	*/
+	function resizeBrowserPanel() {
+		$browserPanel.height(($("#editor-holder").height() - 24) + 'px');
+	}
+	
+	/**
 	 * Set state of extension.
 	 */
 	// this is a menu item
-	function togglePanel() {
-		var enabled = preferences.get('enabled');
-
-		enablePanel(!enabled);
+	function toggleBrowserPanel(enabled) {
+		enabled = enabled === undefined ? !is_browser_pane_enabled : enabled;
+		enableBrowserPanel(enabled);
 	}
 
 	/**
 	 * Initialize extension.
 	 */
-	function enablePanel(enabled) {
+	function enableBrowserPanel(enabled) {
 		if (enabled) {
 			$browserPanel.show();
 						
 			// Set active class on icon.
 			$sqlConnectorIcon.addClass('active');
 			
-			resizeBrowser();
+			resizeBrowserPanel();
 		} else {
 			// Remove active class from icon.
 			$sqlConnectorIcon.removeClass('active');
 			$browserPanel.hide();
 		}
-
+		is_browser_pane_enabled = enabled;
 		// Save enabled state.
-		preferences.set('enabled', enabled);
+		preferences.set('browserPanelEnabled', enabled);
 		preferences.save();
 
 		// Mark menu item as enabled/disabled.
-		CommandManager.get(COMMAND_ID).setChecked(enabled);
+		CommandManager.get(Cmds.TOGGLE_BROWSER_PANEL).setChecked(enabled);
 	}
 		
-	/**
-	* Resize Browser Panel
-	*/
-	function resizeBrowser() {
-		$browserPanel.height(($("#editor-holder").height() - 24) + 'px');
-	}
 	
 	/** 
 	* List table fields
 	*/
 	function listFields(serverInfo, table, callback) {
-		_nodeDomain.exec('query', 'SHOW Columns FROM ' + table + ";").done(function(response) {
+		_nodeDomain.exec('list_fields', serverInfo.__id, serverInfo.database, table).done(function(response) {
 			var fields = response[0], 
-				rows = response[1],
-				fk_query = 'SELECT  ' +
-  'TABLE_NAME as `Table`, COLUMN_NAME as Field, CONSTRAINT_NAME as `Name`, REFERENCED_TABLE_NAME as `ReferencedTable`,REFERENCED_COLUMN_NAME as `ReferencedField` ' +
-'FROM ' +
-  'INFORMATION_SCHEMA.KEY_COLUMN_USAGE ' +
-"WHERE TABLE_SCHEMA = '"+serverInfo.database+"' AND TABLE_NAME = '"+table+"' AND REFERENCED_TABLE_NAME IS NOT NULL; ";
-			
-			_nodeDomain.exec('query', fk_query).done(function(response)  {
-				var fks = response[1],
+				rows = response[1];
+				
+			_nodeDomain.exec('list_foreign_keys', serverInfo.__id, table).done(function(response2)  {
+				var fks = response2[1],
 				html = (function() {
 					var html  = '';
 					for(var i=0,il=rows.length,r,n,fk,pk;i<il;i++) {
@@ -327,7 +304,6 @@ define(function (require, exports, module) {
 								break;
 							}
 						}
-						
 						html += '<li data-name="'+r.Field+'" data-type="'+r.Type+'" class="closed' + (fk !== false ? ' fk': '') + (pk?' pk':'') + '">' +
 									'<label>'+r.Field+'<span class="data-type">' + r.Type + '<span></label></li>';
 					}
@@ -336,32 +312,41 @@ define(function (require, exports, module) {
 				
 				callback.call(callback, fields, rows, html);
 			 }).fail(function(err) {
-				
-			});
-			
+				ResultSets.log('List Fields Error', err);
+				if ( callback ) callback.call(callback, err);
+			});	
+		}).fail(function(err, query) {
+			ResultSets.log('List Fields Error', err, query);
+			if ( callback ) callback.call(callback, err);
 		});
+	}
+	
+	/**
+	* Parse <array>fields and fields<rows> to html of <li>
+	*/
+	function parseToLi(fields, rows, nameFieldIndex) {
+		var html  = '', 
+			f = fields[nameFieldIndex||0],
+			fn = f.name||f.Field||f.Name||f.Column;
+		for(var i=0,il=rows.length,r,n,fk;i<il;i++) {
+			fk = false;
+			r=rows[i];
+			n = r[fn];
+
+			html += '<li data-name="'+n+'" data-type="'+r.Type+'" data-definition="'+r.Definition+'" >' +
+						'<label>'+n+'</label></li>';
+		}
+		return html;
 	}
 	
 	/** 
 	* List database views
 	*/
 	function listViews($li, serverInfo) {
-		var query = "SHOW FULL TABLES IN "+serverInfo.database+" WHERE TABLE_TYPE LIKE 'VIEW';";
-		_nodeDomain.exec('query', serverInfo.__connection_id, query).done(function(response){
+		_nodeDomain.exec('list_views', serverInfo.__id, serverInfo.database).done(function(response){
 			var fields = response[0],
 				views = response[1],
-				html = (function() {
-					var html  = '';
-					for(var i=0,il=views.length,r,n,fk;i<il;i++) {
-						fk = false;
-						r=views[i];
-						n = r[fields[0].name];
-						
-						html += '<li data-name="'+n+'" data-type="'+r.Type+'" >' +
-									'<label>'+n+'</label></li>';
-					}
-					return html;
-				}());
+				html = parseToLi(fields, views);
 			
 			$li.removeClass('loading');
 			$("ul.brackets-sql-connector-list-views", $li)
@@ -369,8 +354,8 @@ define(function (require, exports, module) {
 				.addClass("loaded").removeClass("loading");
 		})
 		.fail(function(err) {
+			ResultSets.log('Show Views Error', err);
 			$li.removeClass('loading');
-			settingsDialog.showMessage(Strings.QUERY_ERROR, err.code, query);
 		});
 	}
 	
@@ -378,21 +363,10 @@ define(function (require, exports, module) {
 	* List database functions
 	*/
 	function listFunctions($li, serverInfo) {
-		_nodeDomain.exec('list_functions', serverInfo.__connection_id, serverInfo.database).done(function(response){
+		_nodeDomain.exec('list_functions', serverInfo.__id, serverInfo.database).done(function(response){
 			var fields = response[0],
-				views = response[1],
-				html = (function() {
-					var html  = '';
-					for(var i=0,il=views.length,r,n,fk;i<il;i++) {
-						fk = false;
-						r=views[i];
-						n = r[fields[0].name];
-						
-						html += '<li data-name="'+n+'" data-type="'+r.Type+'" >' +
-									'<label>'+n+'</label></li>';
-					}
-					return html;
-				}());
+				rows = response[1],
+				html = parseToLi(fields, rows);
 			
 			$li.removeClass('loading');
 			$("ul.brackets-sql-connector-list-functions", $li)
@@ -409,21 +383,10 @@ define(function (require, exports, module) {
 	* List database procedures
 	*/
 	function listProcedures($li, serverInfo) {
-		_nodeDomain.exec('list_procedures', serverInfo.__connection_id).done(function(response){
+		_nodeDomain.exec('list_procedures', serverInfo.__id, serverInfo.database).done(function(response){
 			var fields = response[0],
-				views = response[1],
-				html = (function() {
-					var html  = '';
-					for(var i=0,il=views.length,r,n,fk;i<il;i++) {
-						fk = false;
-						r=views[i];
-						n = r[fields[0].name];
-						
-						html += '<li data-name="'+n+'" data-type="'+r.Type+'" >' +
-									'<label>'+n+'</label></li>';
-					}
-					return html;
-				}());
+				rows = response[1],
+				html = parseToLi(fields, rows);
 			
 			$li.removeClass('loading');
 			$("ul.brackets-sql-connector-browser-list-procedures", $li)
@@ -431,8 +394,9 @@ define(function (require, exports, module) {
 				.addClass("loaded").removeClass("loading");
 		})
 		.fail(function(err) {
+			ResultSets.log('Show Procedures Error', err);
 			$li.removeClass('loading');
-			settingsDialog.showMessage(Strings.QUERY_ERROR, err.code, 'list_procedures');
+			settingsDialog.showMessage(Strings.QUERY_ERROR, err.code);
 		});
 	}
 	
@@ -440,14 +404,14 @@ define(function (require, exports, module) {
 	* List database tables
 	*/
 	function listTables($li, serverInfo) {
-		_nodeDomain.exec('query', serverInfo.__connection_id, 'SHOW TABLES;').done(function(response){
+		_nodeDomain.exec('list_tables', serverInfo.__id, serverInfo.database).done(function(response){
 			var fields = response[0], 
 				rows = response[1],
 				tables = (function() {
-					var html  = '';
+					var html  = '', f = fields[0];
 					for(var i=0,il=rows.length,r,n;i<il;i++) {
 						r=rows[i];
-						n = r[fields[0].name];
+						n = r[f.name || f.Field];
 						html += '<li data-name="'+n+'" class="closed"><label>'+n+'</label></li>';
 					}
 					return html;
@@ -484,8 +448,9 @@ define(function (require, exports, module) {
 			});
 		})
 		.fail(function(err) {
+			ResultSets.log('Show Tables Error', err);
 			$li.removeClass('loading');
-			settingsDialog.showMessage(Strings.QUERY_ERROR, err, 'SHOW TABLES;');
+			settingsDialog.showMessage(Strings.QUERY_ERROR, err);
 		});
 	}
 	
@@ -503,7 +468,7 @@ define(function (require, exports, module) {
 			callback.call(callback, view);
 		});
 	}
-	
+		
 	/**
 	* Disconnect from server
 	*/					
@@ -538,6 +503,7 @@ define(function (require, exports, module) {
 	* Disconnect from all server
 	*/
 	function disconnectAll() {
+		$('ul.connections', $browserPanel).empty();
 		var info = dataStorage.get('server_list');
 		for(var sname in info.servers) {
 			var s = info.servers[sname];
@@ -567,18 +533,9 @@ define(function (require, exports, module) {
 				if (conId > 0) {
 					ResultSets.log(Strings.CONNECTED, label);
 					updateServerStatus(serverInfo.__id, conId);
-					var panelHTML = Mustache.render(connectedServerTemplate, {
-						Strings: Strings,
-						Server: serverInfo,
-						Label: label
-					}),
-					$li = $('ul.connections > li[data-server-id="'+sid+'"]', $browserPanel);
-					if ( !$li || $li.length < 1 ) {
-						$('ul.connections', $browserPanel).append(panelHTML);
-					}
-					else {
-						$li.replace(panelHTML);	
-					}
+					
+					showServerConnection(serverInfo);
+					
 					setSelectedServer(serverInfo.__id);
 				} else {
 					$browserPanel.removeClass('connected');
@@ -672,7 +629,7 @@ define(function (require, exports, module) {
 	function viewLog() {
 		$("#brackets-sql-connector-log-pane").addClass("active").siblings().removeClass("active");
 		$("#brackets-sql-connector-log-pane-anchor").addClass("active").siblings().removeClass("active");
-		toogleQueryResultPane(true);
+		toggleResultPane(true);
 	}
 	
 	/**
@@ -742,7 +699,7 @@ define(function (require, exports, module) {
 	/**
 	 * Show/Hide the Query Result Pane (Logs and Result Sets)
 	 */
-	function toogleQueryResultPane(show) {
+	function toggleResultPane(show) {
 		show = show !== undefined ? show : ! is_result_pane_enabled;
 		if ( show ) {
 			Resizer.show($queryPanel);
@@ -750,14 +707,24 @@ define(function (require, exports, module) {
 			$('div.brackets-sql-connector-result-tab-body', $queryPanel).height(($queryPanel.height()-30) + 'px');
 			
 			is_result_pane_enabled = true;
-			resizeBrowser();
+			resizeBrowserPanel();
 		}
 		else {
 			Resizer.hide($queryPanel);
 			is_result_pane_enabled = false;
-			resizeBrowser();
+			resizeBrowserPanel();
 		}
 	}
+	
+	/**
+	 * Show the Result Pane (Logs and Result Sets)
+	 */
+	function openResultPane() { toggleResultPane(true); }
+	
+	/**
+	 * Hide the  Result Pane (Logs and Result Sets)
+	 */
+	function closeResultPane() { toggleResultPane(false); }
 	
 	/**
 	 * Show server pop up menu
@@ -770,7 +737,7 @@ define(function (require, exports, module) {
 			return;
 		}
 		
-		var _servers = getServerList(),
+		var _servers = getSavedConfig(),
 			htmlConnected = '',
 			htmlNotConnected = '',
 			htmlSetCurrent = '',
@@ -820,7 +787,8 @@ define(function (require, exports, module) {
 			Strings: Strings,
 			//CONNECTIONS: html,
 			MENU_STATUS: css,
-			PANEL_ACTION: (is_result_pane_enabled ? Strings.CLOSE : Strings.OPEN)
+			PANEL_ACTION: (is_result_pane_enabled ? Strings.CLOSE : Strings.OPEN),
+			BROWSER_PANEL_ACTION: (is_browser_pane_enabled ? Strings.CLOSE : Strings.OPEN )
 		}))
 		.appendTo("body");
 		
@@ -835,7 +803,7 @@ define(function (require, exports, module) {
 				id = $li.data("id");
 			
 			if ( action === "disconnect-all") {
-				CommandManager.execute(COMMAND_ID_DISCONNECT_ALL);
+				CommandManager.execute(Cmds.DISCONNECT_ALL);
 			}
 			else if (action === "disconnect" ) {
 				disconnect(getCurrentServer(id));
@@ -844,17 +812,23 @@ define(function (require, exports, module) {
 				setSelectedServer(id, false);
 			}
 			else if (action === "execute-file" ) {
-				CommandManager.execute(COMMAND_ID_EXECUTE_CURRENT_FILE);
+				CommandManager.execute(Cmds.EXECUTE_CURRENT_FILE);
+			}
+			else if (action === "view-log" ) {
+				CommandManager.execute(Cmds.VIEW_LOG);
 			}
 			else if (action === 'execute-selection') {
-				CommandManager.execute(COMMAND_ID_EXECUTE_CURRENT);
+				CommandManager.execute(Cmds.EXECUTE_CURRENT);
 			}
 			else if (action === 'new-connection') {
-				//CommandManager.execute(COMMAND_ID_CONNECTIONS);
+				//CommandManager.execute(Cmds.CONNECTIONS);
 				showSettings();
 			}
 			else if (action === 'toggle-result-panel') {
-				CommandManager.execute(COMMAND_ID_TOGGLE_RESULT_PANE);
+				CommandManager.execute(Cmds.TOGGLE_RESULT_PANEL);
+			}
+			else if (action === 'toggle-browser-panel') {
+				CommandManager.execute(Cmds.TOGGLE_BROWSER_PANE);
 			}
 			else if (action === "connect" && id > 0 ) {
 				setSelectedServer(id, true);
@@ -883,6 +857,37 @@ define(function (require, exports, module) {
 	}
 	
 	/**
+	* Show SQL Definition of an view/procedure/function
+	*/
+	function showDefinition (sid, folder, name, def, dontGet) {
+		var info = getCurrentServer(sid);
+		if ( dontGet !== true && (!def || def === undefined || def === 'undefined' || def === '') ) {
+			_nodeDomain.exec('get_definition', sid, info.database, folder, name).done(function(response) {
+				showDefinition(sid, folder, name, response[1][0].Definition, true);
+			}).fail(function(err) {
+				ResultSets.log('get_definition error', err);
+			});
+			return;
+		}
+		
+		if ( typeof def === 'string' ) {
+			new_files_count = new_files_count + 1;
+			var doc = DocumentManager.getCurrentDocument();
+			
+			if ( !doc.isUntitled() ) {
+				doc = DocumentManager.createUntitledDocument(new_files_count, ".sql");
+			}
+			doc.setText(def);
+			if ( typeof  ProjectManager.setCurrentFile === 'function' ) {
+				ProjectManager.setCurrentFile(doc.file.fullPath);
+			}
+			else if ( typeof DocumentManager.setCurrentDocument === 'function' ) {
+				DocumentManager.setCurrentDocument(doc);
+			}
+		}
+	}
+	
+	/**
 	 * Show settings dialog
 	 */
 	function showSettings() {
@@ -905,7 +910,7 @@ define(function (require, exports, module) {
 		}); 
 	
 		$("#editor-holder").on("resize", function() {
-			resizeBrowser();
+			resizeBrowserPanel();
 		});
 	}
 	
@@ -913,15 +918,17 @@ define(function (require, exports, module) {
 	*	Register extension commands.
 	*/
 	function registerCommands() {
-		CommandManager.register(Strings.EXTENSION_NAME, COMMAND_ID, togglePanel);
-		CommandManager.register(Strings.EXECUTE_CURRENT, COMMAND_ID_EXECUTE_CURRENT, executeCurrent);
-		CommandManager.register(Strings.EXECUTE_CURRENT_FILE, COMMAND_ID_EXECUTE_CURRENT_FILE, executeFile);
-		CommandManager.register(Strings.MANAGE_SERVERS, COMMAND_ID_CONNECTIONS, showSettings);
-		CommandManager.register(Strings.TOGGLE_RESULT_PANEL, COMMAND_ID_TOGGLE_RESULT_PANE, toogleQueryResultPane);
-		CommandManager.register(Strings.DISCONNECT_ALL, COMMAND_ID_DISCONNECT_ALL, disconnectAll);
-		CommandManager.register(Strings.VIEW_LOG, COMMAND_ID_VIEW_LOG, viewLog);
+		//CommandManager.register(Strings.EXTENSION_NAME, Cmds.ENABLE, toggleExtension);
+		CommandManager.register(Strings.EXECUTE_CURRENT, Cmds.EXECUTE_CURRENT, executeCurrent);
+		CommandManager.register(Strings.EXECUTE_CURRENT_FILE, Cmds.EXECUTE_CURRENT_FILE, executeFile);
+		CommandManager.register(Strings.MANAGE_SERVERS, Cmds.CONNECTIONS, showSettings);
+		CommandManager.register(Strings.TOGGLE_RESULT_PANEL, Cmds.TOGGLE_RESULT_PANEL, toggleResultPane);
+		CommandManager.register(Strings.TOGGLE_BROWSER_PANEL, Cmds.TOGGLE_BROWSER_PANEL, toggleBrowserPanel);
+		CommandManager.register(Strings.DISCONNECT_ALL, Cmds.DISCONNECT_ALL, disconnectAll);
+		CommandManager.register(Strings.VIEW_LOG, Cmds.VIEW_LOG, viewLog);
+		CommandManager.register(Strings.OPEN + ' ' + Strings.RESULT_PANEL, Cmds.OPEN_RESULT_PANE, openResultPane);
 		
-		menu.addMenuItem(COMMAND_ID_EXECUTE_CURRENT, 'Alt-Enter');
+		menu.addMenuItem(Cmds.EXECUTE_CURRENT, 'Alt-Enter');
 	}
 
 	// Register panel and setup event listeners.
@@ -947,7 +954,7 @@ define(function (require, exports, module) {
 		StatusBar.addIndicator('alemonteiro.bracketsSqlConnector.connIndicator', $indicator, true, 'brackets-sql-connector-status-indicator');
 		
 		$queryPanel.on('panelResizeEnd', function() {
-			resizeBrowser();	
+			resizeBrowserPanel();	
 		})
 		.on('click', 'a.tab-anchor', function(evt) {
 			var target = $(this).data('target');
@@ -955,7 +962,7 @@ define(function (require, exports, module) {
 			$(target).addClass("active").siblings().removeClass('active');
 		})
 		.on('click', 'a.close-pane', function() {
-			toogleQueryResultPane(false);
+			toggleResultPane(false);
 		})
 		.on('click', 'a.close-result-set', function() {
 			$($(this).prev('a').data('target')).remove();
@@ -978,7 +985,7 @@ define(function (require, exports, module) {
 		// Close panel when close button is clicked.
 		$browserPanel
 			.on('click', '.close', function () {
-				enablePanel(false);
+				enableBrowserPanel(false);
 			});
 
 		// Setup listeners.
@@ -987,12 +994,15 @@ define(function (require, exports, module) {
 		// Setup commands.
 		registerCommands();
 		
+		//checkActiveConnections
+		checkActiveConnections();
+		
 		Resizer.makeResizable($queryPanel, "vert", "top");
 		Resizer.makeResizable($browserPanel, "horz", "left");
 		
 		// Add listener for toolbar icon..
 		$sqlConnectorIcon.click(function () {
-			CommandManager.execute(COMMAND_ID);
+			CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
 		}).appendTo('#main-toolbar .buttons');
 		
 		// Browser Header Button Bar
@@ -1008,8 +1018,13 @@ define(function (require, exports, module) {
 				showServerMenu($btn, false);
 			}
 		})
+		.on('click', 'li.brackets-sql-connector-browser-server > header', function(evt) {
+			evt.stopPropagation();
+			$(this).parent().toggleClass("closed");
+		})
 		// Handler for folder select
 		.on('click', 'ul.brackets-sql-connector-browser-server-folders > li', function(evt) {
+			evt.stopPropagation();
 			var $li = $(this),
 				folder = $(this).data('folder'),
 				need_loaded = !($(this).hasClass('loaded') || $(this).hasClass('loading'));
@@ -1040,11 +1055,23 @@ define(function (require, exports, module) {
 					listFunctions($li, sinfo);
 				}
 			}
+		})
+		// Handle 
+		.on('click', 'ul.brackets-sql-connector-browser-server-folders > li > ul > li', function(evt) {
+			var folder = $(this).parent().parent().data('folder'),
+				sid = $(this).parent().parent().parent().parent().data('server-id'),
+				name = $(this).data("name"),
+				def = $(this).data("definition");
+			
+			if ( folder !== 'tables' ) {
+				evt.stopPropagation();	
+				showDefinition(sid, folder, name,  def);
+			}
 		});
 
 		// Enable extension if loaded last time.
-		if (preferences.get('enabled')) {
-			enablePanel(true);
+		if (preferences.get('browserPanelEnabled')) {
+			enableBrowserPanel(true);
 		}
 	});
 });

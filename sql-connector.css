@@ -1,3 +1,20 @@
+
+#brackets-sql-connector-browser {
+	position: absolute;
+	right: 29px;
+	top: 0;
+	z-index: 999;
+	width: 250px;
+	background: #2c2c2c;
+	min-height: 450px;
+	padding: 6px;
+	display: none;
+	box-sizing: border-box;
+	overflow: auto;
+}
+#brackets-sql-connector-browser * { box-sizing: border-box; }
+
+
 #brackets-sql-connector-browser .status-stab{
     color: #555;
     cursor: pointer;
@@ -22,20 +39,6 @@
 .brackets-sql-connector-browser .done .message {
 	text-decoration: line-through;
 }
-
-#brackets-sql-connector-browser {
-	position: absolute;
-	right: 29px;
-	top: 0;
-	z-index: 999;
-	width: 250px;
-	background: #2c2c2c;
-	min-height: 450px;
-	padding: 6px;
-	display: none;
-	box-sizing: border-box;
-}
-#brackets-sql-connector-browser * { box-sizing: border-box; }
 
 #brackets-sql-connector-browser ul.tables {
 	margin: 5px;
@@ -214,6 +217,41 @@ button.btn-server-setup > b {
 	margin-top: 5px;
 }
 
+.brackets-sql-connector-browser-server > header::before,
+.brackets-sql-connector-browser-server-folders > li > label::before {
+	content: " ";
+	width: 18px;
+	height: 18px;
+	display: inline-block;
+	padding: 3px;
+	margin-right: 5px;
+	background-repeat: no-repeat;
+	background-origin: content-box;
+	background-size: contain;
+	background-position: 3px 3px;
+}
+
+.brackets-sql-connector-browser-list {
+	list-style-type: none;
+}
+.brackets-sql-connector-browser-list > li {
+	padding: 2px 4px;
+}
+
+.brackets-sql-connector-browser-server.mysql > header::before {
+	background-image: url('images/mysql.svg');
+}
+
+.brackets-sql-connector-browser-server.mssql > header::before {
+	background-image: url('images/cross.svg');
+}
+.brackets-sql-connector-browser-server.closed > ul { display: none; }
+.brackets-sql-connector-browser-server.closed > header::before { 
+	width: 14px;
+	height: 14px;
+}
+
+
 .brackets-sql-connector-list-tables, .brackets-sql-connector-browser-server-folders {
 	list-style-type: none;
 	margin: 0;
@@ -221,14 +259,10 @@ button.btn-server-setup > b {
 }
 
 .brackets-sql-connector-browser-server-folders > li.closed > label::before {
-	content: " + ";
-	cursor: pointer;
-	padding-right: 0.4em; 
+	background-image: url('images/folder.svg');
 }
 .brackets-sql-connector-browser-server-folders > li.open > label::before {
-	content: " - ";
-	cursor: pointer;
-	padding-right: 0.4em; 
+	background-image: url('images/folder_opem.svg');
 }
 .brackets-sql-connector-browser-server-folders > li.closed > ul { display: none; }
 .brackets-sql-connector-browser-server-folders > li.open > ul { display: block; }
@@ -493,4 +527,12 @@ button.btn-server-setup > b {
 }
 #brackets-sql-connector-log-pane  ul li label {
 	margin: 0 5px;	
+}
+#brackets-sql-connector-log-pane pre {
+	background: #2c2c2c;
+	margin-left: 3px;
+}
+#brackets-sql-connector-log-pane pre {
+	background: #2c2c2c;
+	margin-left: 3px;
 }

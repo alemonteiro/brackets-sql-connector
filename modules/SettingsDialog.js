@@ -82,6 +82,8 @@ define( function( require, exports ) {
 		var $dialog = dialog.getElement();
 		return {
 			__id: $('.input-id', $dialog).val(),
+			__connection_id: $('.input-connection-id', $dialog).val(),
+			engine: $('.input-engine', $dialog).val(), 
 			name: $('.input-name', $dialog).val(),
 			host: $('.input-host', $dialog).val(),
 			port: $('.input-port', $dialog).val(),
@@ -96,6 +98,8 @@ define( function( require, exports ) {
 		var $dialog = dialog.getElement();
 		$('input:text', $dialog).val('');
 		$('.input-id', $dialog).val(0);
+		$('.input-connection-id', $dialog).val(0);
+		$('.input-engine', $dialog)[0].selectedIndex = 0;
 		$('.input-port', $dialog).val(defaultPort);
 	}
 	
@@ -106,6 +110,7 @@ define( function( require, exports ) {
         }
         $('.input-method', $dialog).val(serverInfo.method);
 		$('.input-id', $dialog).val(serverInfo.__id);
+		$('.input-connection-id', $dialog).val(serverInfo.__connection_id);
 		$('.input-name', $dialog).val(serverInfo.name);
 		$('.input-method', $dialog).val(serverInfo.method);
 		$('.input-host', $dialog).val(serverInfo.host);
@@ -113,6 +118,7 @@ define( function( require, exports ) {
 		$('.input-username', $dialog).val(serverInfo.username);
 		$('.input-password', $dialog).val(serverInfo.password);
 		$('.input-database', $dialog).val(serverInfo.database);
+		$('.input-engine', $dialog).val(serverInfo.engine);
 		
 		if ( serverInfo.confirmModifications !== true ) {
 			$('.input-confirm-modifications', $dialog).removeAttr('checked');

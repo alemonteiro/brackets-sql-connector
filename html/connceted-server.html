@@ -1,26 +1,26 @@
-<li data-server-id="{{Server.__id}}" class="brackets-sql-connector-browser-server">
+<li data-server-id="{{Server.__id}}" class="brackets-sql-connector-browser-server {{Server.engine}}">
 	
 	<header>{{Label}}</header>
 	
 	<ul class="brackets-sql-connector-browser-server-folders">
 		<li data-folder="tables" class="closed">
 			<label>{{Strings.TABLES}}</label>
-			<ul class="brackets-sql-connector-list-tables"></ul>
+			<ul class="brackets-sql-connector-browser-list brackets-sql-connector-list-tables"></ul>
 			<span class="brackets-sql-connector-empty-list">{{Strings.NO_TABLES}}</span>
 		</li>
 		<li data-folder="views" class="closed">
 			<label>{{Strings.VIEWS}}</label>
-			<ul class="brackets-sql-connector-list-views"></ul>
+			<ul class="brackets-sql-connector-browser-list brackets-sql-connector-list-views"></ul>
 			<span class="brackets-sql-connector-empty-list">{{Strings.NO_VIEWS}}</span>
 		</li>
 		<li data-folder="procedures" class="closed">
 			<label>{{Strings.PROCEDURES}}</label>
-			<ul class="brackets-sql-connector-browser-list-procedures"></ul>
+			<ul class="brackets-sql-connector-browser-list brackets-sql-connector-browser-list-procedures"></ul>
 			<span class="brackets-sql-connector-empty-list">{{Strings.NO_PROCEDURES}}</span>
 		</li>
 		<li data-folder="functions" class="closed">
 			<label>{{Strings.FUNCTIONS}}</label>
-			<ul class="brackets-sql-connector-list-functions"></ul>
+			<ul class="brackets-sql-connector-browser-list brackets-sql-connector-list-functions"></ul>
 			<span class="brackets-sql-connector-empty-list">{{Strings.NO_FUNCTIONS}}</span>
 		</li>
 	</ul>

@@ -45,6 +45,7 @@ define( {
 	OPEN: "Open",
 	CLOSE: "Close",
 	MANAGE_SERVERS: "Manage Servers",
+	ENGINE: "Engine",
 	VIEW_LOG: "View Log",
 	LOG: "Log",
 	
@@ -84,6 +85,9 @@ define( {
 	RESULT_SET: "Result Set",
 	RESULT_PANEL: "Result Panel",
 	TOGGLE_RESULT_PANEL: "Toggle Result Panel",
+	TOGGLE_BROWSER_PANEL: "Toggle Browser Panel",
+	
+	BROWSER_PANEL: "Browser Panel",
 	
 	// TOOLBAR.
 	SERVER_SETUP: "Server Setup",
@@ -93,6 +97,7 @@ define( {
 	
 	// SETTINGS DIALOG.
 	SETTINGS_DIALOG_TITLE:        "SQL Connector - Connection Settings",
+	SETTINGS_DIALOG_ENGINE: 	  "Engine",
 	SETTINGS_DIALOG_HOST: 		  "Host",
 	SETTINGS_DIALOG_PORT: 		  "Port",
 	SETTINGS_DIALOG_USERNAME: 	  "User Name",

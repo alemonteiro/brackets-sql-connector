@@ -5,7 +5,7 @@ Bracket SQL Connector and Browser
 
 ## Features ##
 
-* V 0.1.1 Supports Only MySQL 
+* V 0.3.0 Supports MySQL and MS SQL Server(>=2005)
 * Browser Panel (shows tables, fields, views, functions and procedures)
 * Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
 * Result Sets Panel with log viewer
@@ -25,7 +25,7 @@ Bracket SQL Connector and Browser
     * (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
     
 ## Restrictions / Not Implemented stuff / Buggy ##
-
+	
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
 * Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
 * The browser has no function other than listing the stuff for now, in the near future it'll open the function/view/procedure content on the editor.
@@ -33,8 +33,17 @@ Bracket SQL Connector and Browser
 
 ## Release Notes ##
 
-V 0.0.2 - Fixed lots of bugs on interface due to last time renaming
-V 0.0.1 - Probably some bugs =x - Should disconnect from server before closing brackets
+### V 0.3.0 ###
+* Added MS SQL Server support
+* Show view/procedure/function code in editor when selecting it from browser panel
+* Better re-establish last connections handling (not perfect tho)
+* Added Open/Close Browser Panel on Menu
+* Lots of code refactoring
+* Fixed minor bugs
+* Improved connected server style
+
+V 0.2.0 - Fixed lots of bugs on interface due to last time renaming
+V 0.1.0 - Probably some bugs =x - Should disconnect from server before closing brackets
 
 ## Notes for developers ##
 
@@ -44,16 +53,17 @@ npm install
 
 in the /node folder.
 
+### Contributions And Attributions ###
+
+* All those fabulous icons are given by freekpik: http://freepik.com
+* MySQL Server Connections are made possible by https://www.npmjs.com/package/mysql
+* MS SQL Server Connections are made possible by https://www.npmjs.com/package/mssql
+
 ## TODO ##
 
-* Show View/Functions/Procedures contents on browser panel
 * Use node mysql connection pools
-* Implement ms sql server connection (extension default querys should be moved to a new module on the domain)
 * Configurable one connection and result sets per editor
 
-### TODO - Inteface stuff ###
-
-* enable open/close connection on browser panel
 
 ### TODO - Code Stuff ###
 

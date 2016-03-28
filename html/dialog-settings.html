@@ -14,8 +14,18 @@
        <div class="brackets-sql-connector-server-list-panel">
 		   <div class="field-container name">
 				<label>
+					{{ Strings.SETTINGS_DIALOG_ENGINE }}:
+				</label>
+				<select size="1" class="input-engine">
+					<option value="mysql">My SQL</option>	
+					<option value="mssql">MS SQL Server</option>
+				</select>
+		   </div>
+		   <div class="field-container name">
+				<label>
 					{{ Strings.SETTINGS_DIALOG_NAME }}:
 				</label>
+				<input type="hidden" class="input-connection-id" value="{{__connection_id}}"/>
 				<input type="hidden" class="input-id" value="{{__id}}"/>
 				<input type="text" class="input-name" value="{{name}}"/>
 		   </div>

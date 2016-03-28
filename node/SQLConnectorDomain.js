@@ -1,16 +1,21 @@
 /*jshint node: true*/
-/* globals brackets, define, Mustache */
 (function () {
 
 	var mysql = require("mysql"),
+		mssql = require("mssql"),
+		Querys = {
+			mssql : require("./MSSqlQuery.js"),
+			mysql : require("./MySqlQuery.js")	
+		},
 		domainName = "BracketsSqlConnectorDomain",
 		connections = {},
 		lastConnId = 0,
+		_domainManager,
 		
 		// Internal Functions
 		clog = function(text, extra) {
 			if (typeof console === 'object') {
-				console.log('SFTPUploadDomain: ' + text + (
+				console.log('SQL Connector: ' + text + (
 					typeof extra === 'object' ? (' => ' + JSON.stringify(extra)) :
 					(typeof extra === 'string' ? (' => ' + extra) : '')
 				));
@@ -22,55 +27,43 @@
 			
 			return connections[id];
 		},
-		
-		_query = function(connId, query, callback) {
-			
-			if ( typeof connId === 'string' ) {
-				callback = query;
-				query = connId;
-				connId = undefined;
-			}
-			
-			var connection = _getConn(connId);
-			
-			if ( ! connection ) return callback('no connection found');
-			
-			clog("Querying " + connId + " WITH " + query);
-			
-			return connection.query(query, function (err, rows, fields) {
-				if (err) {
-					clog("Query Error: ", err);
-					callback(err);
-				}
-				return callback(0, [fields, rows]);
-			});
-		},
-		
-		// Generic Commands
-		cmdConnect = function (dbConfig, callback) {
+				
+		// MySQL Commands
+		mysqlConnect = function(dbconfig, callback) {
 			var connection = mysql.createConnection({
-				host: dbConfig.host,
-				port: dbConfig.port,
-				user: dbConfig.username,
-				password: dbConfig.password,
-				database: dbConfig.database,
+				host: dbconfig.host,
+				port: dbconfig.port,
+				user: dbconfig.username,
+				password: dbconfig.password,
+				database: dbconfig.database,
 				multipleStatements: true,
 				debug: true,
 				trace: true
 			});
-			connection.serverId = dbConfig.__id;
+			connection.serverId = dbconfig.__id;
+			connection.engine = dbconfig.engine;
+			connection.database = dbconfig.engine;
+			connection.__query = mysqlQuery;
+			if ( connection.isConnected === undefined ) {
+				connection.isConnected = function() {
+					return this.status === "conected";
+				};
+			}
 			clog("Connecting to " + connection.host);
-			return connection.connect(function (err) {
+			
+			connection.connect(function (err) {
 				if (err) {
 					clog("Connecting ERROR : " + err);
 					callback('err connection ' + err);
 				}
-				lastConnId = connection.threadId;
-				connections[connection.threadId] = connection;
-				return callback(0, connection.threadId);
-			});
+				else {
+					lastConnId = connection.serverId;
+					connections[connection.serverId] = connection;
+					callback(null, connection.serverId);
+				}
+			});	
 		},
-		cmdDisconnect = function (connId, callback) {
+		mysqlDisconnect = function(connId, callback) {
 			var connection = _getConn(connId);
 			if (! connection ) {
 				return callback(0, 0);
@@ -84,6 +77,139 @@
 				return callback(0, 1);
 			});
 		},
+		mysqlQuery = function(connId, query, callback) {
+						
+			var conn = _getConn(connId);
+			
+			if ( ! conn ) callback('no connection found');
+			
+			clog("Querying " + connId + " WITH " + query);
+			
+			conn.query(query, function (err, rows, fields) {
+				if (err) {
+					clog("Query Error: ", err);
+					callback(err, query);
+				}
+				return callback(0, [fields, rows]);
+			});
+		},
+		
+		// MS SQL Commands
+		mssqlConnect = function(dbconfig, callback) {
+			var config = {
+				user: dbconfig.username,
+				password: dbconfig.password,
+				server: dbconfig.host, //.replace(/\/+/g, "/"),
+				database: dbconfig.database,
+				port: dbconfig.port
+			};
+			
+			clog("MS SQL Connecting", config);
+			var conn = mssql.connect(config, function(err) {
+				if (err) {
+					clog("MS SQL Conn Error", err);
+					callback(err.code + " : " + err.message);
+				}
+				else {
+					conn.serverId = dbconfig.__id;
+					conn.engine = dbconfig.engine;
+					conn.database = dbconfig.database;
+					conn.__query = mssqlQuery;
+					
+					if ( conn.isConnected === undefined ) {
+						conn.isConnected = function() {
+							return this.connected === true;
+						};
+					}
+					clog("MS SQL Connected!!");
+					lastConnId = conn.serverId;
+					connections[conn.serverId] = conn;
+					callback(0, conn.serverId);
+				}
+			});
+			
+			mssql.on('error', function(err) {
+				clog("MS SQL Error", err);
+				callback(err.code + " : " + err.message);
+				//_domainManager.emitEvent(domainName, 'error', [err.message, err]);
+			});
+		},
+		mssqlDisconnect = function(connId, callback) {
+			var cnn = _getConn(connId);
+			if ( cnn ) {
+				cnn.close(function(err) {
+					if (err) {
+						callback(err.code +  ': ' + err.message);
+					}
+					else {
+						callback(err, 1);
+					}
+				});
+			}
+			else {
+				callback(null, 1);
+			}
+		},
+		mssqlQuery = function(connId, sql, callback) {
+			var conn = _getConn(connId),
+				request = new mssql.Request(conn),
+				fields,
+				rows = [],
+				errors = []; // or: var request = connection1.request(); 
+			
+			clog("MS SQL Querying", sql);
+			request.multiple = true;
+			request.batch(sql, function(err, recordSets) {
+				//if ( !err ) console.dir(recordSets);
+				//else console.error(err);
+				
+				//clog('MS SQL Request Done', recordSets);
+				if ( err ) {
+					callback(err.code + " : " + err.message, sql);
+					return;
+				}
+				for(var i=0,il=recordSets.length,rs, fields;i<il;i++) {
+					rs = recordSets[i];
+					fields = [];
+					if ( rs.length > 0 ) {
+						for(var p in rs[0]) {
+							fields.push({Field: p});
+						}
+					}
+					callback(0, [fields, rs]);
+				}
+				
+			});
+			
+		},
+		
+		// Generic DB Commands
+		cmdListActiveConnections = function() {
+			var arr = [];
+			for(var p in connections) {
+				if ( connections[p].isConnected() ) {
+					arr.push(p);
+				}
+			}
+			return arr;
+		},
+		cmdConnect = function (dbConfig, callback) {
+			if ( dbConfig.engine === "mssql") {
+				mssqlConnect(dbConfig, callback);
+			}
+			else {
+				mysqlConnect(dbConfig, callback);
+			}
+		},
+		cmdDisconnect = function (connId, callback) {
+			var cnn = _getConn(connId);
+			if ( cnn.engine === "mssql") {
+				mssqlDisconnect(connId, callback);
+			}
+			else {
+				mysqlDisconnect(connId, callback);
+			}
+		},
 		cmdQuery = function (connId, query, callback) {
 			
 			if ( typeof connId === 'string' && typeof query === 'function' ) {
@@ -96,46 +222,82 @@
 			if ( ! connection ) return callback('no connection found');
 			
 			clog(arguments.length + ": Querying to " + connection.threadId + " => " + query);
-						
-			return connection.query(query, function (err, rows, fields) {
-				//clog("Query Result:", fields);
-				if (err) {
-					callback(err);
-				}
-				
-				return callback(0, [fields, rows]);
-			});
+			
+			connection.__query(connId, query, callback);
 		},
 		
-		// DataBase Commands
-		cmdListFunctions = function(connId, database, callback) {
+		// Browse DataBase Commands
+		cmdListTables = function(connId, db, callback) {
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showTables(db);
 			
-			var query = "SHOW FUNCTION STATUS WHERE Db = '"+database+"';";
-			
-			return _query(connId, query, callback);
+			cnn.__query(connId, query, callback);
 		},
-		cmdListProcedures = function(connId, callback) {
+		cmdListFields = function(connId, db, table, callback) {
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showFields(db, table);
 			
-			var connection = _getConn(connId),
-				query = "SHOW PROCEDURE STATUS WHERE Db = '"+connection.database+"';";
+			cnn.__query(connId, query, callback);
+		},
+		cmdListViews = function(connId, db, callback) {
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showViews(db);
 			
-			return cmdQuery(connId, query, callback);
+			cnn.__query(connId, query, callback);
+		},
+		cmdListFunctions = function(connId, db, callback) {
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showFunctions(db);
+			
+			cnn.__query(connId, query, callback);
+		},
+		cmdListProcedures = function(connId, db, callback) {
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showProcedures(db);
+			
+			cnn.__query(connId, query, callback);
+		},
+		cmdListForeignKeys = function(connId, table, callback) {
+			
+			var cnn = _getConn(connId),
+				query = Querys[cnn.engine].showForeignKeys(cnn.database, table);
+			
+			cnn.__query(connId, query, callback);
 		},
 		
 		// Initialization
 		init = function (domainManager) {
-
+			_domainManager = domainManager;
+			
 			if (!domainManager.hasDomain()) {
 				domainManager.registerDomain(domainName, {
 					major: 0,
-					minor: 1
+					minor: 2
 				});
 			}
-			domainManager.registerCommand(domainName, "connect", cmdConnect, true, "Connect to a database");
-			domainManager.registerCommand(domainName, "disconnect", cmdDisconnect, true, "Disconnect from the database");
 			
-			domainManager.registerCommand(domainName, "list_functions", cmdListFunctions, true, "List created function on the database");
-			domainManager.registerCommand(domainName, "list_procedures", cmdListProcedures, true, "List created procedures on the database");
+			// Register Events
+			domainManager.registerEvent(domainName, "error",
+				[{
+					name: "message",
+					type: "string",
+					description: "error message"
+				},{
+					name: "details",
+					type: "object",
+					description: "error details"
+				}]);
+			
+			domainManager.registerCommand(domainName, "list_connections", 	cmdListActiveConnections, 		false, "List active connections");
+			
+			domainManager.registerCommand(domainName, "connect", 			cmdConnect, 		true, "Connect to a database");
+			domainManager.registerCommand(domainName, "disconnect", 		cmdDisconnect, 		true, "Disconnect from the database");
+			domainManager.registerCommand(domainName, "list_tables", 		cmdListTables, 		true, "List database tables");
+			domainManager.registerCommand(domainName, "list_fields", 		cmdListFields, 		true, "List table fields");
+			domainManager.registerCommand(domainName, "list_views", 		cmdListViews, 		true, "List database views");
+			domainManager.registerCommand(domainName, "list_functions", 	cmdListFunctions, 	true, "List created function on the database");
+			domainManager.registerCommand(domainName, "list_procedures", 	cmdListProcedures, 	true, "List created procedures on the database");
+			domainManager.registerCommand(domainName, "list_foreign_keys", 	cmdListForeignKeys, 	true, "List foreign keys from a table");
 			
 			return domainManager.registerCommand(domainName, "query", cmdQuery, true, "Query the database");
 		};
