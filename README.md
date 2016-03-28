@@ -1,2 +1,59 @@
-# brackets-sql-connector
-SQL Connector Extesion for Brackets
+brackets-sql-connector
+====================
+
+Bracket SQL Connector and Browser
+
+## Features ##
+
+* V 0.1.1 Supports Only MySQL 
+* Browser Panel (shows tables, fields, views, functions and procedures)
+* Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
+* Result Sets Panel with log viewer
+* Create and store multiple server connections (settings are not per project, same server can be used on any project)
+* Multiple connections at once (but only one active for all editor)
+* Status Bar Menu For Connect/Disconnect and change Active Editor Connection
+* Store server settings in the brackets system preference file, not the root folder of your projects, so no worry about uploading your credentials to your git repo.
+
+## Getting Started ##
+
+1. Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
+2. Search for SQL Browser;
+3. Click Install;
+4. Click the SQL Connector icon (database with gears) on the right toolbar to open the browser panel;
+5. Click on the status bar label (Normally 'Not Connected') to open the Menu 
+8. Shortcuts: 
+    * (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
+    
+## Restrictions / Not Implemented stuff / Buggy ##
+
+* Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
+* Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
+* The browser has no function other than listing the stuff for now, in the near future it'll open the function/view/procedure content on the editor.
+	
+## Release Notes ##
+
+V 0.0.1 - Probably some bugs =x - Should disconnect from server before closing brackets
+
+## Notes for developers ##
+
+This repo does not include required node modules! For extension developers, please run 
+
+npm install
+
+in the /node folder.
+
+## TODO ##
+
+* Show View/Functions/Procedures contents on browser panel
+* Use node mysql connection pools
+* Implement ms sql server connection (extension default querys should be moved to a new module on the domain)
+* Configurable one connection and result sets per editor
+
+### TODO - Inteface stuff ###
+
+* enable open/close connection on browser panel
+
+### TODO - Code Stuff ###
+
+* Remove unused css rules / optmize css selectors and names
+* I don't know... there's alway something to make it better

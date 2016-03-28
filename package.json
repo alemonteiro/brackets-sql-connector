@@ -1,0 +1,33 @@
+{
+    "name": "brackets-sql-connector",
+    "title": "SQL Connector & Browser",
+    "description": "View SQL DataBases and execute querys from editor. Only supports MySQL for now.",
+	"keywords":["sql connector", "sql", "database", "mysql", "database viewer", "execute query", "sql browser", "execute sql"],
+    "version": "0.0.1",
+    "license": "MIT",
+  	"homepage": "https://github.com/alemonteiro/brackets-sql-connector.git",
+	"author": {
+		"name": "Alê Monteiro",
+		"email": "code@alemonteiro.com.br",
+		"url": "http://alemonteiro.com.br"
+	},
+  	"repository": {
+    	"type": "git",
+    	"url": "https://github.com/alemonteiro/brackets-sql-connector.git"
+  	},
+    "engines": {
+        "brackets": ">=0.24.0"
+    },
+    "i18n": [
+        "en"
+    ],
+	"files": [
+		"html/",
+		"images/",
+		"nls/",
+		"License",
+		"Readme.md",
+		"main.js",
+		"sql-connector.css"
+	]
+}

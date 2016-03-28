@@ -1,0 +1,496 @@
+#brackets-sql-connector-browser .status-stab{
+    color: #555;
+    cursor: pointer;
+}
+.brackets-sql-connector-browser table {
+	width: 100%;
+	position: relative;
+}
+
+.brackets-sql-connector-browser td {
+	vertical-align: middle;
+}
+
+.brackets-sql-connector-browser td.filename{
+    padding-left: 20px;
+}
+
+.brackets-sql-connector-browser .done {
+	opacity: .5;
+}
+
+.brackets-sql-connector-browser .done .message {
+	text-decoration: line-through;
+}
+
+#brackets-sql-connector-browser {
+	position: absolute;
+	right: 29px;
+	top: 0;
+	z-index: 999;
+	width: 250px;
+	background: #2c2c2c;
+	min-height: 450px;
+	padding: 6px;
+	display: none;
+	box-sizing: border-box;
+}
+#brackets-sql-connector-browser * { box-sizing: border-box; }
+
+#brackets-sql-connector-browser ul.tables {
+	margin: 5px;
+	padding: 5px;
+}
+
+#brackets-sql-connector-browser a.close { position: absolute; top: 0; right: 5px;}
+
+/*--- Sql Connector Tool Bar Icon ---*/
+a#brackets-sql-connector-icon {
+	background-image: url( 'images/database.svg' );
+	background-origin: padding-box;
+	background-size: contain;
+	background-size: 18px 18px;
+	background-position: 4px 3px;
+	padding: 0px 3px;
+}
+
+a#brackets-sql-connector-icon.active {
+	/*background-position-y: -24px;*/
+	background-color: #000;
+	background-origin: padding-box;
+	background-size: contain;
+	background-size: 18px 18px;
+	background-position: 4px 3px;
+	padding: 0px 3px;
+}
+
+/*--- PROJECT WIDE SEARCH ---*/
+.brackets-sql-connector-server-config-form .field-container {
+    margin-bottom: 7px;
+}
+
+.brackets-sql-connector-server-config-form input, .brackets-sql-connector-server-config-form select {
+    margin-left: 105px;
+    margin-bottom: 0;
+    display: inline-block;
+}
+
+.brackets-sql-connector-server-config-form label {
+    position: absolute;
+    margin-top: 5px;
+    display: inline-block;
+    width: 100px;
+    text-align: right;
+}
+.brackets-sql-connector-server-config-form div.checkbox {
+	padding-left: 100px;
+}
+.brackets-sql-connector-server-config-form div.checkbox > label {
+	width: auto;
+}
+
+ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-height: 100px; height: auto;}
+.brackets-sql-connector-servers-menu li { padding: 3px 0; }
+.brackets-sql-connector-servers-menu li:not(.connect-to):not(.separator):not(.set-current-connection):not(.disconnect-from):hover {
+	background: #1a1a1a;
+}
+.brackets-sql-connector-servers-menu h2 {font-size: 14px; padding: 2px; font-weight: bold;margin: 0; line-height: normal;}
+.brackets-sql-connector-servers-menu .separator{
+	height: 0px;
+	border-bottom: 1px solid #AAA;
+	margin: 0;
+	padding: 0;
+}
+
+.brackets-sql-connector-servers-menu.no-connections li.disconnect {
+	display: none;
+}
+.brackets-sql-connector-servers-menu.no-text-selection li.execute-selection 	{	display: none; }
+.brackets-sql-connector-servers-menu.no-sql-file li.execute-file 		{ display: none; }
+.brackets-sql-connector-servers-menu.no-other-server li.set-current 			{ display: none; }
+
+
+.brackets-sql-connector-servers-menu.no-servers + li {
+	display: none;
+}
+
+/* Checkbox has less height than standard text box */
+.brackets-sql-connector-server-config-form .upload-on-save label {
+    margin-top: 0px;
+}
+
+.brackets-sql-connector-server-config-form .future label {
+    width: 210px;
+    margin-top: 7px;
+}
+
+#brackets-sql-connector-server-list-dialog { width: 750px; }
+#brackets-sql-connector-server-list {
+	background: #333;
+	padding: 0.5em;
+	/*border: 1px solid #999;*/
+	list-style-type: none;
+	margin: 0;
+	min-height: 225px;
+}
+#brackets-sql-connector-server-list li {
+	margin-bottom: 5px;
+	font-size: 1.1em;
+	position: relative;
+	padding: 0.2em 0.2em;
+}
+#brackets-sql-connector-server-list li.selected {
+	color: #FFF;
+	font-weight: bolder;
+	background: #2c2c2c;
+}
+#brackets-sql-connector-server-list li:hover {
+	background: #3c3c3c;
+	cursor: pointer;
+	color: #000;
+	font-weight: bold;
+}
+#brackets-sql-connector-server-list li > a.close { display: none;  }
+#brackets-sql-connector-server-list li:hover > a.close { 
+	position: absolute;
+	right: 0px;
+	top: 0px;
+	display: block;
+	color: #FFF;
+	font-size: 1em;
+	cursor: pointer;
+	padding: 0.2em 0.5em;
+	margin: 0;
+}
+#brackets-sql-connector-server-list li:hover > a.close:hover {
+	background: #852222;
+	color: #FFF;
+}
+button.btn-server-setup > b {
+	font-weight: bold;
+	color: #FFF;
+}
+.brackets-sql-connector-server-list-panel {
+	float: left;
+	width: 250px;
+}
+
+.brackets-sql-connector-server-list-panel {
+	float: left;
+	display: inline-block;
+	margin-left: 10px;
+}
+
+#brackets-sql-connector-browser > .header > label {
+	font-size: 1.2em;
+	display: inline-block;
+}
+
+.connections {
+	margin: 0;
+	padding: 0;
+}
+
+.conn-error {
+	color: #852222;
+	display: block;
+	background: #090909;
+	border-radius: 4px;
+	font-size: 1.3em;
+	padding: 4px 6px;
+}
+
+.brackets-sql-connector-clearfix:after { 
+   content: " ";
+   display: block; 
+   height: 0; 
+   clear: both;
+   *zoom: expression( this.runtimeStyle['zoom'] = '1', this.innerHTML += '<div class="ie7-clear"></div>' );
+}
+
+.brackets-sql-connector-browser-server > header {
+	font-size: 1.3em;
+	padding: 0.2em;
+	margin-top: 5px;
+}
+
+.brackets-sql-connector-list-tables, .brackets-sql-connector-browser-server-folders {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+.brackets-sql-connector-browser-server-folders > li.closed > label::before {
+	content: " + ";
+	cursor: pointer;
+	padding-right: 0.4em; 
+}
+.brackets-sql-connector-browser-server-folders > li.open > label::before {
+	content: " - ";
+	cursor: pointer;
+	padding-right: 0.4em; 
+}
+.brackets-sql-connector-browser-server-folders > li.closed > ul { display: none; }
+.brackets-sql-connector-browser-server-folders > li.open > ul { display: block; }
+
+.brackets-sql-connector-browser-server-folders > li > ul {
+	margin-left: 8px;
+}
+
+.brackets-sql-connector-list-tables > li.closed > label::before {
+	content: " + ";
+	cursor: pointer;
+	padding-right: 0.4em; 
+}
+.brackets-sql-connector-list-tables > li.open > label::before {
+	content: " - ";
+	cursor: pointer;
+	padding-right: 0.4em; 
+}
+.brackets-sql-connector-list-tables> li.loading > label::after {
+	content: " Loading... ";
+	padding-right: 0.4em; 
+	display: block;
+}
+
+.brackets-sql-connector-list-fields {
+	list-style-type: none;
+	font-weight: 300;
+}
+
+.brackets-sql-connector-list-tables span.data-type {
+	margin-left: 5px;
+	color: #AAA;
+	font-weight: 200;
+}
+
+.brackets-sql-connector-list-fields li.pk > label::after {
+	display: inline-block;
+	content: " [PK] ";
+}
+.brackets-sql-connector-list-fields li.fk > label::after {
+	display: inline-block;
+	content: " [FK] ";
+}
+.brackets-sql-connector-list-fields li.pk.fk > label::after, .brackets-sql-connector-list-fields li.fk.pk > label::after {
+	display: inline-block;
+	content: " [PK] [FK] ";
+}
+
+.brackets-sql-connector-server-select-list {
+	background: #090909;
+	padding: 0.3em;
+	list-style-type: none;
+	display:none;
+	position: absolute;
+	top: 28px;
+	left: 5%;
+	right: 5%;
+	width: 90%;
+	box-sizing: border-box;
+}
+
+.brackets-sql-connector-server-select-list.open { display: block; }
+.brackets-sql-connector-server-select-list.open:empty {display: none;}
+.brackets-sql-connector-server-select-list.open:empty + span.brackets-sql-connector-empty-list {
+	display: block;
+} 
+
+.brackets-sql-connector-server-select-list > li:hover {
+	background: #090909;
+	cursor: pointer;
+}
+
+.brackets-sql-connector-empty-list {
+	background: #3c3c3c;
+	margin-left: 1em;
+	border-radius: 4px;
+	padding: 0.2em;
+	display: none;
+}
+
+.brackets-sql-connector-browser-server-folders > li.open.loaded > ul:empty + span.brackets-sql-connector-empty-list{ display: block; }
+
+.brackets-sql-connector-browser button.btn-icon,
+.brackets-sql-connector-status-indicator button.btn-icon {
+	background: none;
+	border: none;
+	color: #FFF;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center center;
+	background-origin: content-box;
+	width: 24px;
+	height: 24px;
+	padding: 3px;
+	margin: 0 3px;
+	cursor: pointer;
+}
+.brackets-sql-connector-browser button.btn-icon path {
+	fill: #FFF;
+	stroke: #0F0;
+	color: #FFF;
+}
+.brackets-sql-connector-browser button.btn-icon.btn-new-query {
+	background-image: url('images/edit_query_white.svg');
+}
+.brackets-sql-connector-browser button.btn-icon.btn-server-select {
+	background-image: url('images/connection_white.svg');
+}
+.brackets-sql-connector-browser button.btn-icon.btn-server-setup {
+	background-image: url('images/mechanic_white.svg');
+}
+.brackets-sql-connector-status-indicator button.btn-query-execute{
+	background-image: url('images/play_white.svg');
+	width: 16px;
+	height: 16px;
+}
+.brackets-sql-connector-status-indicator button.btn-query-execute{
+	background-image: url('images/play_white.svg');
+	width: 16px;
+	height: 16px;
+	display: none;
+}
+.brackets-sql-connector-status-indicator.connected.has-sql button.btn-query-execute{
+	display: inline-block;
+}
+
+.brackets-sql-connector-status-indicator.executing button.btn-query-execute{
+	background-image: url('images/arrows_white.svg');
+	width: 16px;
+	height: 16px;
+	animation-name: rotateThis;
+	animation-duration: .5s;
+	animation-iteration-count: infinite;
+	animation-timing-function: linear;
+}
+
+.brackets-sql-connector-status-indicator > label { display: inline-block; }
+.brackets-sql-connector-status-indicator > label::before{
+	content: " ";
+	background: none;
+	border: none;
+	color: #FFF;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center center;
+	background-origin: content-box;
+	background-image: url('images/connection_white.svg');
+	width: 16px;
+	height: 16px;
+	padding: 0px;
+	margin: 0px;
+	padding-top: 3px;
+	margin-right: 5px;
+	display: inline-block;
+}
+
+.brackets-sql-connector-status-indicator.connected > label::before{
+	content: " ";
+	background: none;
+	border: none;
+	color: #FFF;
+	background-repeat: no-repeat;
+	background-size: contain;
+	background-position: center center;
+	background-origin: content-box;
+	background-image: url('images/connection_green.svg');
+	width: 16px;
+	height: 16px;
+	padding: 0px;
+	margin: 0px;
+	padding-top: 3px;
+	margin-right: 5px;
+	display: inline-block;
+}
+
+.brackets-sql-connector-query-pane {
+	background: #090909;
+	padding: 4px 5px;
+	position: relative;
+}
+.brackets-sql-connector-query-pane > a.close {
+	position: absolute;
+	top: 3px;
+	right: 3px;
+	padding: 3px;
+}
+@keyframes "rotateThis" {
+  from { transform: scale( 1 ) rotate( 0deg );   }
+  to   { transform: scale( 1 ) rotate( 360deg ); }
+}
+
+.brackets-sql-connector-query-result table {
+	width: 100%;
+}
+.brackets-sql-connector-query-result th {
+	padding: 2px;
+	border-collapse: collapse;
+	border: 1px solid #AAA;
+	background: #2c2c2c;
+}
+.brackets-sql-connector-query-result td {		
+	border-right: 1px solid #999;
+	text-align: center;
+	padding: 1px;
+}
+.brackets-sql-connector-query-result tbody tr {
+	background: #323232;	
+}
+.brackets-sql-connector-query-result tbody tr:nth-child(odd) {
+	background: #424242;	
+}
+
+.brackets-sql-connector-query-results-sets ul {
+	list-style-type: none;
+}
+.brackets-sql-connector-query-results-sets ul li {
+	float: left;
+	padding: 0.1em;
+	display: inline-block;
+	
+}
+.brackets-sql-connector-query-results-sets ul li a {
+	padding: 0.1em;
+	color: #666;
+	display: inline-block;
+}
+
+.brackets-sql-connector-query-results-sets ul li.active a {
+	color: #FFF;
+}
+
+.brackets-sql-connector-query-results-sets > div > div { display: none; }
+.brackets-sql-connector-query-results-sets > div > div.active { display: block; }
+
+.brackets-sql-connector-result-tab-header {
+	display: block;
+	height: 24px;
+	margin: 0 2px;
+}
+.brackets-sql-connector-result-tab-body {
+	display: block;
+	overflow: auto;
+	width: 100%;
+}
+
+#brackets-sql-connector-result-log-pane ul{
+	list-style-type: none;
+	background: #1A1A1A;
+	margin: 0 2px;
+}
+#brackets-sql-connector-result-log-pane ul li {
+	display: block;
+	float: none;
+	border-bottom: 1px solid #232323;
+}
+#brackets-sql-connector-result-log-pane  ul li {
+	display: block;
+	border-bottom: 
+}
+#brackets-sql-connector-result-log-pane  ul li > * { 
+	display: inline-block;
+}
+#brackets-sql-connector-result-log-pane  ul li label {
+	margin: 0 5px;	
+}

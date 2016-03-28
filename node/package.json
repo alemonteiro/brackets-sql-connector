@@ -1,0 +1,12 @@
+{
+  "name": "brackets-sql-connector-domain",
+  "version": "0.0.1",
+  "description": "Brackets domain for implementing the extension MySQL Browser",
+  "author": "Wang Yu <bigeyex@gmail.com>",
+  "homepage": "https://github.com/alemonteiro/brackets-sql-connector.git",
+  "author": "Alê Monteiro <code@alemonteiro.com.br> (http://alemonteiro.com.br)",
+  "license": "MIT",
+  "dependencies": {
+    "mysql": ">=2.10.0"
+  }
+}

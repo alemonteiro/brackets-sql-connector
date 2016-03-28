@@ -1,0 +1,69 @@
+<div id="brackets-sql-connector-server-list-dialog" class="modal">
+    <div class="modal-header">
+        <h1 class="dialog-title">{{ Strings.SETTINGS_DIALOG_TITLE }}</h1>
+    </div>
+    {{#info}}
+    <div class="modal-body table-striped tab-content brackets-sql-connector-server-config-form brackets-sql-connector-clearfix">
+       <div class="brackets-sql-connector-server-list-panel">
+       		<h2>
+       			{{ Strings.SETTINGS_DIALOG_SERVERS }}
+       			<button data-button-id="new"  class="dialog-button btn secundary">{{ Strings.SETTINGS_DIALOG_NEW_SERVER }}</button>
+       		</h2>
+       		<ul id="brackets-sql-connector-server-list"></ul>
+       </div>
+       <div class="brackets-sql-connector-server-list-panel">
+		   <div class="field-container name">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_NAME }}:
+				</label>
+				<input type="hidden" class="input-id" value="{{__id}}"/>
+				<input type="text" class="input-name" value="{{name}}"/>
+		   </div>
+			<div class="field-container host">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_HOST }}:
+				</label>
+				<input type="text" class="input-host" value="{{host}}"/>
+			</div>
+			<div class="field-container port">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_PORT }}:
+				</label>
+				<input type="text" class="input-port" value="{{port}}"/>
+			</div>
+			<div class="field-container username">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_USERNAME }}:
+				</label>
+				<input type="text" class="input-username" value="{{username}}"/>
+			</div>
+			<div class="field-container password">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_PASSWORD }}:
+				</label>
+				<input type="password" class="input-password" value="{{password}}"/>
+			</div>
+			<div class="field-container database">
+				<label>
+					{{ Strings.SETTINGS_DIALOG_DATABASE }}:
+				</label>
+				<input type="text" class="input-database" value="{{database}}"/>
+			</div>
+       		<div class="field-container confirm-modifications checkbox">
+       			<label>
+       				<input type="checkbox" class="input-confirm-modifications">
+       				{{Strings.SETTINGS_CONFIRM_MODIFICATIONS}}
+       			</label>
+       		</div>
+        </div>
+    </div>
+    {{/info}}
+
+    <div class="modal-footer">
+       	<label class="test-connection-status"></label>
+        <button data-button-id="ok" class="dialog-button btn">{{ Strings.OK }}</button>
+        <button data-button-id="save" class="dialog-button btn primary">{{ Strings.SAVE }}</button>
+        <button data-button-id="test" class="dialog-button btn">{{ Strings.TEST_CONNECTION }}</button>
+        <button data-button-id="cancel" class="dialog-button btn">{{ Strings.CANCEL }}</button>
+    </div>
+</div>
