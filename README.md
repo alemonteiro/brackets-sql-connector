@@ -29,9 +29,11 @@ Bracket SQL Connector and Browser
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
 * Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
 * The browser has no function other than listing the stuff for now, in the near future it'll open the function/view/procedure content on the editor.
-	
+* No SSL support yet
+
 ## Release Notes ##
 
+V 0.0.2 - Fixed lots of bugs on interface due to last time renaming
 V 0.0.1 - Probably some bugs =x - Should disconnect from server before closing brackets
 
 ## Notes for developers ##

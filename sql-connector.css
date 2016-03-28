@@ -404,12 +404,12 @@ button.btn-server-setup > b {
 	display: inline-block;
 }
 
-.brackets-sql-connector-query-pane {
+.brackets-sql-connector-result-pane {
 	background: #090909;
 	padding: 4px 5px;
 	position: relative;
 }
-.brackets-sql-connector-query-pane > a.close {
+.brackets-sql-connector-result-pane > a.close {
 	position: absolute;
 	top: 3px;
 	right: 3px;
@@ -420,48 +420,48 @@ button.btn-server-setup > b {
   to   { transform: scale( 1 ) rotate( 360deg ); }
 }
 
-.brackets-sql-connector-query-result table {
+.brackets-sql-connector-result table {
 	width: 100%;
 }
-.brackets-sql-connector-query-result th {
+.brackets-sql-connector-result th {
 	padding: 2px;
 	border-collapse: collapse;
 	border: 1px solid #AAA;
 	background: #2c2c2c;
 }
-.brackets-sql-connector-query-result td {		
+.brackets-sql-connector-result td {		
 	border-right: 1px solid #999;
 	text-align: center;
 	padding: 1px;
 }
-.brackets-sql-connector-query-result tbody tr {
+.brackets-sql-connector-result tbody tr {
 	background: #323232;	
 }
-.brackets-sql-connector-query-result tbody tr:nth-child(odd) {
+.brackets-sql-connector-result tbody tr:nth-child(odd) {
 	background: #424242;	
 }
 
-.brackets-sql-connector-query-results-sets ul {
+.brackets-sql-connector-results-sets ul {
 	list-style-type: none;
 }
-.brackets-sql-connector-query-results-sets ul li {
+.brackets-sql-connector-results-sets ul li {
 	float: left;
 	padding: 0.1em;
 	display: inline-block;
 	
 }
-.brackets-sql-connector-query-results-sets ul li a {
+.brackets-sql-connector-results-sets ul li a {
 	padding: 0.1em;
 	color: #666;
 	display: inline-block;
 }
 
-.brackets-sql-connector-query-results-sets ul li.active a {
+.brackets-sql-connector-results-sets ul li.active a {
 	color: #FFF;
 }
 
-.brackets-sql-connector-query-results-sets > div > div { display: none; }
-.brackets-sql-connector-query-results-sets > div > div.active { display: block; }
+.brackets-sql-connector-results-sets > div > div { display: none; }
+.brackets-sql-connector-results-sets > div > div.active { display: block; }
 
 .brackets-sql-connector-result-tab-header {
 	display: block;
@@ -474,23 +474,23 @@ button.btn-server-setup > b {
 	width: 100%;
 }
 
-#brackets-sql-connector-result-log-pane ul{
+#brackets-sql-connector-log-pane ul{
 	list-style-type: none;
 	background: #1A1A1A;
 	margin: 0 2px;
 }
-#brackets-sql-connector-result-log-pane ul li {
+#brackets-sql-connector-log-pane ul li {
 	display: block;
 	float: none;
 	border-bottom: 1px solid #232323;
 }
-#brackets-sql-connector-result-log-pane  ul li {
+#brackets-sql-connector-log-pane  ul li {
 	display: block;
 	border-bottom: 
 }
-#brackets-sql-connector-result-log-pane  ul li > * { 
+#brackets-sql-connector-log-pane  ul li > * { 
 	display: inline-block;
 }
-#brackets-sql-connector-result-log-pane  ul li label {
+#brackets-sql-connector-log-pane  ul li label {
 	margin: 0 5px;	
 }

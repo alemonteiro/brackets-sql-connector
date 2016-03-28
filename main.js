@@ -49,7 +49,7 @@ define(function (require, exports, module) {
 
 		// Mustache templates.
 		browserPanelTemplate = require('text!html/browser-panel.html'),
-		queryPanelTemplate = require('text!html/query-pane.html'),
+		queryPanelTemplate = require('text!html/result-pane.html'),
 		queryResultSetTemplate = require('text!html/result-set.html'),
 		connectedServerTemplate = require('text!html/connceted-server.html'),
 		serverMenuTemplate = require('text!html/server-menu.html'),
@@ -82,9 +82,7 @@ define(function (require, exports, module) {
 				prefix = "brackets-sql-connector-result-set-",
 				
 				add_achor = function(id) {
-					
-					var $tabs = $("#brackets-sql-connector-query-pane > brackets-sql-connector-results-sets"),
-						 li = '<li class="active">' +
+					var li = '<li class="active">' +
 									'<a href="#" class="tab-anchor" data-target="#'+prefix + id +'">' + Strings.RESULT_SET + ' '  + id +'</a>' +
 									'<a href="#" class="close close-result-set">&times;</a>' +
 							'</li>';
@@ -121,8 +119,7 @@ define(function (require, exports, module) {
 					}
 					
 					ids = ids + 1;
-					var $tabs = $("#brackets-sql-connector-query-pane > div.brackets-sql-connector-query-results-sets"),
-						cid = ids,
+					var cid = ids,
 						$pane = $(Mustache.render(queryResultSetTemplate, {
 							Strings: Strings,
 							Id: cid
@@ -172,7 +169,6 @@ define(function (require, exports, module) {
 	// Load stylesheet.
 	ExtensionUtils.loadStyleSheet(module, 'sql-connector.css');
 	
-	
 	/**
 	 * Get saved server list 
 	 */
@@ -183,10 +179,11 @@ define(function (require, exports, module) {
 	}
 	
 	/**
-	* Returns server label ({username}@{host}/database)
+	* Returns server name // ({username}@{host}/database)
 	*/
 	function getServerLabel(srv) {
-		return srv ? srv.username + "@" + srv.host + "/" + srv.database : Strings.NOT_CONNECTED;
+		return srv ? srv.name : '';
+		//srv.username + "@" + srv.host + "/" + srv.database : Strings.NOT_CONNECTED;
 	}
 	/**
 	 * Get saved serverInfo 
@@ -832,6 +829,7 @@ define(function (require, exports, module) {
 		$('li.set-current-connection', $ul).after(htmlSetCurrent);
 		
 		$ul.on('click', 'a', function(evt) {
+			evt.stopPropagation();
 			var $li = $(this).parent(),
 				action = $li.data("action"),
 				id = $li.data("id");
@@ -852,25 +850,23 @@ define(function (require, exports, module) {
 				CommandManager.execute(COMMAND_ID_EXECUTE_CURRENT);
 			}
 			else if (action === 'new-connection') {
-				CommandManager.execute(COMMAND_ID_CONNECTIONS);
+				//CommandManager.execute(COMMAND_ID_CONNECTIONS);
+				showSettings();
 			}
 			else if (action === 'toggle-result-panel') {
 				CommandManager.execute(COMMAND_ID_TOGGLE_RESULT_PANE);
 			}
-			else if (id > 0 ) {
+			else if (action === "connect" && id > 0 ) {
 				setSelectedServer(id, true);
 			}
+			
 			$ul.remove(); 
-		})
-		.focus()
-		.on('blur', function() {
-			//$ul.remove();
 		});
 		
 		var off = $btn.offset();
 		if ( onTop !== false ) {
 			$ul.css({
-				left: (off.left - ($ul.width()/2) ) + 'px',
+				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
 				top: 'auto',
 				right: 'auto',
 				bottom: ($("body").height() - off.top + 5) + 'px'
@@ -878,7 +874,7 @@ define(function (require, exports, module) {
 		}
 		else {
 			$ul.css({
-				left: (off.left - ($ul.width()/2) ) + 'px',
+				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
 				top: (off.top + 20) + 'px',
 				right: 'auto',
 				bottom: 'auto'
@@ -920,7 +916,7 @@ define(function (require, exports, module) {
 		CommandManager.register(Strings.EXTENSION_NAME, COMMAND_ID, togglePanel);
 		CommandManager.register(Strings.EXECUTE_CURRENT, COMMAND_ID_EXECUTE_CURRENT, executeCurrent);
 		CommandManager.register(Strings.EXECUTE_CURRENT_FILE, COMMAND_ID_EXECUTE_CURRENT_FILE, executeFile);
-		CommandManager.register(Strings.MANAGE_CONNECTIONS, COMMAND_ID_CONNECTIONS, showSettings);
+		CommandManager.register(Strings.MANAGE_SERVERS, COMMAND_ID_CONNECTIONS, showSettings);
 		CommandManager.register(Strings.TOGGLE_RESULT_PANEL, COMMAND_ID_TOGGLE_RESULT_PANE, toogleQueryResultPane);
 		CommandManager.register(Strings.DISCONNECT_ALL, COMMAND_ID_DISCONNECT_ALL, disconnectAll);
 		CommandManager.register(Strings.VIEW_LOG, COMMAND_ID_VIEW_LOG, viewLog);
@@ -953,7 +949,7 @@ define(function (require, exports, module) {
 		$queryPanel.on('panelResizeEnd', function() {
 			resizeBrowser();	
 		})
-		.on('click', 'brackets-sql-connector-query-results-sets > ul > li > a.tab-anchor', function(evt) {
+		.on('click', 'a.tab-anchor', function(evt) {
 			var target = $(this).data('target');
 			$(this).parent().addClass("active").siblings().removeClass('active');
 			$(target).addClass("active").siblings().removeClass('active');
