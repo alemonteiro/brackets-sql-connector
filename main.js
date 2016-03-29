@@ -185,7 +185,22 @@ define(function (require, exports, module) {
 			$indicator.addClass('connected').children('label').html(getServerLabel(svr));
 		}
 	}
-		
+	
+	/**
+	* Check if there's another connection active to be selected as the editor connection
+	*/
+	function selectNextConnectedServer() {
+		var cfg = getSavedConfig(),
+			connId = false;
+		for(var s in cfg.servers ) {
+			if ( cfg.servers[s].__connection_id > 0 ) {
+				connId = s;
+				break;
+			}
+		}
+		if ( connId ) setSelectedServer(connId);
+	}
+	
 	/**
 	* Check on node domain the active connections
 	*/
@@ -472,20 +487,26 @@ define(function (require, exports, module) {
 	/**
 	* Disconnect from server
 	*/					
-	function disconnect(serverInfo, callback, updateStatus) {
+	function disconnect(serverInfo, callback, updateStatus, searchForNext) {
 		var label = getServerLabel(serverInfo);
 		ResultSets.log(Strings.DISCONNECTING, label);
 		_nodeDomain.exec('disconnect', serverInfo.__connection_id).done(function() {
 			ResultSets.log(Strings.DISCONNECTED, label);
-			$browserPanel.removeClass('connected');
-			$indicator.removeClass('connected').children('label').html(Strings.DISCONNECTED);
-			is_connected = false;
+			
 			if ( updateStatus !== false ) {
 				updateServerStatus(serverInfo.__id, 0);
 			}
-			if ( serverInfo.__id != _current_server_id ) {
-				setSelectedServer(false);
+			if ( serverInfo.__id == _current_server_id ) {
+				if ( ! hasActiveConnection() ) {
+					setSelectedServer(false);	
+					$browserPanel.removeClass('connected');
+					$indicator.removeClass('connected').children('label').html(Strings.DISCONNECTED);
+				}
+				else if ( searchForNext !== false ) {
+					selectNextConnectedServer();
+				}
 			}
+			
 			$('ul.connections > li[data-server-id="'+serverInfo.__id+'"]', $browserPanel).remove();
 			if ( typeof callback === 'function' ) {
 				callback.call(callback, true);
@@ -508,11 +529,14 @@ define(function (require, exports, module) {
 		for(var sname in info.servers) {
 			var s = info.servers[sname];
 			if ( s.__connection_id > 0) {
-				disconnect(s, false, false);
+				disconnect(s, false, false, false);
 				s.__connection_id = 0;
 			}
 		}
 		dataStorage.set('server_list', info);
+		$browserPanel.removeClass("connected");
+		$indicator.removeClass('connected');
+		$("label", $indicator).html(Strings.DISCONNECTED);
 	}
 	
 	/**
@@ -828,7 +852,7 @@ define(function (require, exports, module) {
 				CommandManager.execute(Cmds.TOGGLE_RESULT_PANEL);
 			}
 			else if (action === 'toggle-browser-panel') {
-				CommandManager.execute(Cmds.TOGGLE_BROWSER_PANE);
+				CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
 			}
 			else if (action === "connect" && id > 0 ) {
 				setSelectedServer(id, true);

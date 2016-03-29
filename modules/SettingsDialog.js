@@ -6,7 +6,6 @@ define( function( require, exports ) {
     
     // Get module dependencies.
     var Dialogs = brackets.getModule( 'widgets/Dialogs' ),
-        
         // Extension modules.
         Strings = require( 'modules/Strings'),
         dataStorage = require( 'modules/DataStorageManager' ),
@@ -16,7 +15,11 @@ define( function( require, exports ) {
         
         // Variables.
         dialog,
-        defaultPort = 3306,
+		engines = {
+			mysql : { port: 3306 },
+			mssql : { port: 1433 }
+		},
+		isNewObject = false,
 		itensToRemove = [];
     
     /**
@@ -25,12 +28,8 @@ define( function( require, exports ) {
     function setValues( values ) {
 		
     }
-    
-    /**
-     * Exposed method to get the backup folder name
-     */
-	
-    /**
+
+	/**
      * Initialize dialog values.
      */
     function init() {
@@ -38,7 +37,8 @@ define( function( require, exports ) {
     }
     
     function newServerObj() {
-        return { __id: 0, name: "default", host:'', port:defaultPort, user:'', password:'', database: '', confirmModifications: true  };
+		isNewObject = true;
+        return { __id: 0, name: "default", host:'', port:engines.mysql.port, user:'', password:'', database: '', confirmModifications: true  };
     }
 	
 	function saveServer(serverInfo) {
@@ -95,15 +95,17 @@ define( function( require, exports ) {
 	}
 	
 	function clearForm() {
+		isNewObject = true;
 		var $dialog = dialog.getElement();
 		$('input:text', $dialog).val('');
 		$('.input-id', $dialog).val(0);
 		$('.input-connection-id', $dialog).val(0);
 		$('.input-engine', $dialog)[0].selectedIndex = 0;
-		$('.input-port', $dialog).val(defaultPort);
+		$('.input-port', $dialog).val(engines.mysql.port);
 	}
 	
 	function fillForm(serverInfo) {
+		isNewObject = false;
 		var $dialog = dialog.getElement();
         if(serverInfo.uploadOnSave){
             $('.input-save', $dialog).prop('checked', true);
@@ -126,8 +128,6 @@ define( function( require, exports ) {
 		else {
 			$('.input-confirm-modifications', $dialog).attr('checked', 'checked');
 		}
-		
-		
 	}
 	
 	/**
@@ -138,7 +138,6 @@ define( function( require, exports ) {
 			$("label.test-connection-status", dialog.getElement()).html(status);	
 		}
 	};
-	
 	
     /**
      * Exposed method to show dialog.
@@ -242,6 +241,11 @@ define( function( require, exports ) {
 		
         // manually handle ESC Key and buttons because of autoDismiss = false
         $(dialog.getElement())
+		.on('change', '.input-engine', function(evt) {
+			if ( isNewObject ) {
+				$('.input-port', $(dialog.getElement())).val(engines[$(this).val()].port);
+			}
+		})
         .off('keyup')
         .on('keyup', function(evt) { 
             if ( evt.keyCode === 27 ) {

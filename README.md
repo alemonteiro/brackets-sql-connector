@@ -1,11 +1,11 @@
 brackets-sql-connector
 ====================
 
-Bracket SQL Connector and Browser
+Connect to your databases directly from brackets. Browser the schema with an right panel and be able to execute sql directly from the editor.
 
 ## Features ##
 
-* V 0.3.0 Supports MySQL and MS SQL Server(>=2005)
+* V 0.3.1 Supports MySQL and MS SQL Server(>=2005)
 * Browser Panel (shows tables, fields, views, functions and procedures)
 * Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
 * Result Sets Panel with log viewer
@@ -31,7 +31,27 @@ Bracket SQL Connector and Browser
 * The browser has no function other than listing the stuff for now, in the near future it'll open the function/view/procedure content on the editor.
 * No SSL support yet
 
+### Contributions And Attributions ###
+
+* All those fabulous icons are given by freekpik: http://freepik.com
+* MySQL Server Connections are made possible by https://www.npmjs.com/package/mysql
+* MS SQL Server Connections are made possible by https://www.npmjs.com/package/mssql
+
+## Notes for developers ##
+
+This repo does not include required node modules! For extension developers, please run 
+
+npm install
+
+in the /node folder.
+
 ## Release Notes ##
+
+### V 0.3.1 ###
+* Added default port for MS SQL Server (1433)
+* Bug Fixes
+Browser panel not opening from pop menu
+Indicator Stauts keep saying is connected after Disconnect All
 
 ### V 0.3.0 ###
 * Added MS SQL Server support
@@ -44,20 +64,6 @@ Bracket SQL Connector and Browser
 
 V 0.2.0 - Fixed lots of bugs on interface due to last time renaming
 V 0.1.0 - Probably some bugs =x - Should disconnect from server before closing brackets
-
-## Notes for developers ##
-
-This repo does not include required node modules! For extension developers, please run 
-
-npm install
-
-in the /node folder.
-
-### Contributions And Attributions ###
-
-* All those fabulous icons are given by freekpik: http://freepik.com
-* MySQL Server Connections are made possible by https://www.npmjs.com/package/mysql
-* MS SQL Server Connections are made possible by https://www.npmjs.com/package/mssql
 
 ## TODO ##
 

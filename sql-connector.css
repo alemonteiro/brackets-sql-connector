@@ -371,6 +371,9 @@ button.btn-server-setup > b {
 .brackets-sql-connector-browser button.btn-icon.btn-server-select {
 	background-image: url('images/connection_white.svg');
 }
+.brackets-sql-connector-browser.connected button.btn-icon.btn-server-select {
+	background-image: url('images/connection_green.svg');
+}
 .brackets-sql-connector-browser button.btn-icon.btn-server-setup {
 	background-image: url('images/mechanic_white.svg');
 }
