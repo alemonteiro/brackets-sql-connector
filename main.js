@@ -190,7 +190,11 @@ define(function (require, exports, module) {
 		else if (svr !== null && svr !== undefined && svr.__connection_id > 0 ) {
 			is_connected = true;
 			$browserPanel.addClass('connected');
-			$indicator.addClass('connected').children('label').html(getServerLabel(svr));
+			$indicator
+				.addClass('connected')
+				.children('label')
+				.data("sid", serverId)
+				.html(getServerLabel(svr));
 		}
 	}
 	
@@ -498,7 +502,7 @@ define(function (require, exports, module) {
 	function disconnect(serverInfo, callback, updateStatus, searchForNext) {
 		var label = getServerLabel(serverInfo);
 		ResultSets.log(Strings.DISCONNECTING, label);
-		_nodeDomain.exec('disconnect', serverInfo.__connection_id).done(function() {
+		_nodeDomain.exec('disconnect', serverInfo.__id).done(function() {
 			ResultSets.log(Strings.DISCONNECTED, label);
 			
 			if ( updateStatus !== false ) {
@@ -508,7 +512,9 @@ define(function (require, exports, module) {
 				if ( ! hasActiveConnection() ) {
 					setSelectedServer(false);	
 					$browserPanel.removeClass('connected');
-					$indicator.removeClass('connected').children('label').html(Strings.DISCONNECTED);
+					$indicator.removeClass('connected').children('label')
+						.html(Strings.DISCONNECTED)
+						.data("sid", false);
 				}
 				else if ( searchForNext !== false ) {
 					selectNextConnectedServer();
@@ -544,7 +550,7 @@ define(function (require, exports, module) {
 		dataStorage.set('server_list', info);
 		$browserPanel.removeClass("connected");
 		$indicator.removeClass('connected');
-		$("label", $indicator).html(Strings.DISCONNECTED);
+		$("label", $indicator).html(Strings.DISCONNECTED).data("sid", false);
 	}
 	
 	/**
@@ -633,7 +639,7 @@ define(function (require, exports, module) {
 		
 		ResultSets.log(Strings.EXECUTING, sql);
 		_nodeDomain
-			.exec('query', server.__connection_id, sql)
+			.exec('query', server.__id, sql)
 			.done(function(response) {			
 			
 			ResultSets.log(Strings.FINISHED, sql);
@@ -673,7 +679,8 @@ define(function (require, exports, module) {
 			$indicator.addClass("executing");
 			$('label', $indicator).html(Strings.EXECUTING);
 				file.read(function(err, data, status) {
-					executeSQLCommand(getCurrentServer(), data, function(err, fields, rows) {
+					var sid = $("label", $indicator).data("sid");
+					executeSQLCommand(getCurrentServer(sid), data, function(err, fields, rows) {
 						ResultSets.add(fields, rows, data, err);
 						$indicator.removeClass("executing");
 						$('label', $indicator).html(Strings.FINISHED + '('+rows.length+' rows)');
@@ -721,7 +728,7 @@ define(function (require, exports, module) {
 				executeFile();
 			}
 			else {
-				executeSQLCommand(getCurrentServer(), text, function(err, fields, rows) {
+				executeSQLCommand(getCurrentServer($("label", $indicator).data("sid")), text, function(err, fields, rows) {
 					ResultSets.add(fields, rows, text, err);
 				});
 			}

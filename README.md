@@ -46,6 +46,16 @@ in the /node folder.
 
 ## Release Notes ##
 
+### V 0.3.3 ###
+* Bug Fixes
+Fixed execute from editor not working 
+
+### V 0.3.2 ###
+* Bug Fixes
+Fixed to tool bar icon not showing
+Fixed pop menu not showing when no setup existed
+Fixed test connection not working unless server settings was saved
+
 ### V 0.3.1 ###
 * Added default port for MS SQL Server (1433)
 * Bug Fixes
