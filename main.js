@@ -54,7 +54,7 @@ define(function (require, exports, module) {
 		$queryPanel,
 		$indicator,
 		projectUrl,
-		$sqlConnectorIcon = $('<a href="#" title="' + Strings.EXTENSION_NAME + '" id="brackets-sql-connector-icon"></a>'),
+		$sqlConnectorIcon,
 		
 		// Get view menu.
 		menu = Menus.getMenu(Menus.AppMenuBar.VIEW_MENU),
@@ -86,7 +86,13 @@ define(function (require, exports, module) {
 	 */
 	function getSavedConfig() {
 		var serverInfo = dataStorage.get('server_list');
-		
+		if ( serverInfo === undefined || serverInfo === false || serverInfo === null || serverInfo === "" ) {
+			return {
+                selected_id: false,
+                server_ids: 0,
+                servers: {}
+			};
+		}
 		return serverInfo;
 	}
 	
@@ -118,10 +124,12 @@ define(function (require, exports, module) {
 	function hasActiveConnection() {
 		var cfg = getSavedConfig(),
 			hasConn = false;
-		for(var s in cfg.servers ) {
-			if ( cfg.servers[s].__connection_id > 0 ) {
-				hasConn = true;
-				break;
+		if ( cfg && cfg !== null && cfg.servers ) {
+			for(var s in cfg.servers ) {
+				if ( cfg.servers[s].__connection_id > 0 ) {
+					hasConn = true;
+					break;
+				}
 			}
 		}
 		return hasConn;
@@ -579,7 +587,7 @@ define(function (require, exports, module) {
 	function testConnection(serverInfo) {
 		settingsDialog.updateStatus(Strings.TEST_CONNECTION_STARTING);
 		_nodeDomain.exec('connect', serverInfo).done(function(conId) {
-			if (conId > 0) {
+			if (conId >= 0) {
 				settingsDialog.updateStatus(Strings.TEST_CONNECTION_SUCCESS);
 				_nodeDomain.exec('disconnect');
 			} else {
@@ -751,6 +759,16 @@ define(function (require, exports, module) {
 	function closeResultPane() { toggleResultPane(false); }
 	
 	/**
+	 * Show settings dialog
+	 */
+	function showSettings() {
+		settingsDialog.showDialog({
+			testConnection: testConnection,
+			serverSelected: function(server) { }
+		});
+	}
+	
+	/**
 	 * Show server pop up menu
 	 */
 	function showServerMenu($btn, onTop){
@@ -859,6 +877,8 @@ define(function (require, exports, module) {
 			}
 			
 			$ul.remove(); 
+		}).on('blur', function(evt) {
+			$ul.remove();	
 		});
 		
 		var off = $btn.offset();
@@ -912,17 +932,7 @@ define(function (require, exports, module) {
 	}
 	
 	/**
-	 * Show settings dialog
-	 */
-	function showSettings() {
-		settingsDialog.showDialog({
-			testConnection: testConnection,
-			serverSelected: function(server) { }
-		});
-	}
-	
-	/**
-	 * Listen for save or refresh and look for todos when needed.
+	 * Add main listeners
 	 */
 	function registerListeners() {
 		var $projectManager = $(ProjectManager);
@@ -957,13 +967,14 @@ define(function (require, exports, module) {
 
 	// Register panel and setup event listeners.
 	AppInit.appReady(function () {
-		var panelHTML = Mustache.render(browserPanelTemplate, {
+		
+	 	$sqlConnectorIcon = $('<a href="#" title="' + Strings.EXTENSION_NAME + '" id="brackets-sql-connector-icon"></a>');
+		
+		// Browser Panel
+		var browserPanel = Mustache.render(browserPanelTemplate, {
 			Strings: Strings
 		});
-		
-		// Create and cache todo panel.
-		
-		$("#main-toolbar").before(panelHTML);
+		$("#main-toolbar").before(browserPanel);
 		
 		$queryPanel = $(Mustache.render(queryPanelTemplate, {
 			Strings: Strings
@@ -973,9 +984,17 @@ define(function (require, exports, module) {
 		
 		$indicator = $(Mustache.render(indicatorTemplate, {
 			Strings: Strings
-		}));
-		
+		}));				
 		StatusBar.addIndicator('alemonteiro.bracketsSqlConnector.connIndicator', $indicator, true, 'brackets-sql-connector-status-indicator');
+		$indicator.on('click', 'button', function(evt){
+			var action = $(this).data("action");
+			if ( action === "execute" ) {
+				executeFile();	
+			}
+		})
+		.on('click', 'label', function(evt) {
+			showServerMenu($(this));
+		});
 		
 		$queryPanel.on('panelResizeEnd', function() {
 			resizeBrowserPanel();	
@@ -993,19 +1012,7 @@ define(function (require, exports, module) {
 			$(this).parent().remove();
 		});
 		
-		$indicator.on('click', 'button', function(evt){
-			var action = $(this).data("action");
-			if ( action === "execute" ) {
-				executeFile();	
-			}
-		})
-		.on('click', 'label', function(evt) {
-			showServerMenu($(this));
-		});
-		
-		//WorkspaceManager.createBottomPanel('alemonteiro.bracketsSqlConnector.panel', $(panelHTML), 100);
 		$browserPanel = $('#brackets-sql-connector-browser');
-
 		// Close panel when close button is clicked.
 		$browserPanel
 			.on('click', '.close', function () {

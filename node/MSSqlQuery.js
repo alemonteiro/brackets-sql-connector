@@ -88,6 +88,5 @@ module.exports = {
 	showProcedures: function(db, name) {
 		return this.showRoutines(db, 'PROCEDURE');
 	}
-	
-	
+		
 };

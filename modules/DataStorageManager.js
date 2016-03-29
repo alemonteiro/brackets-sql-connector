@@ -8,7 +8,7 @@ define( function( require, exports, module ) {
         ProjectManager = brackets.getModule( 'project/ProjectManager' ),
         FileUtils         = brackets.getModule("file/FileUtils"),
         PreferencesManager = brackets.getModule( 'preferences/PreferencesManager' ),
-        preferences = PreferencesManager.getExtensionPrefs( 'alemonteiro.bracketsMySQLBrowser' );
+        preferences = PreferencesManager.getExtensionPrefs( 'alemonteiro.bracketsSqlConnector' );
 
     var self = this,
         propertyList = {},

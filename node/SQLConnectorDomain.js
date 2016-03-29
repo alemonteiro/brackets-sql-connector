@@ -11,6 +11,7 @@
 		connections = {},
 		lastConnId = 0,
 		_domainManager,
+		connCounter = 0,
 		
 		// Internal Functions
 		clog = function(text, extra) {
@@ -57,9 +58,15 @@
 					callback('err connection ' + err);
 				}
 				else {
-					lastConnId = connection.serverId;
-					connections[connection.serverId] = connection;
-					callback(null, connection.serverId);
+					connCounter = connCounter + 1;
+					if ( connection.serverId !== undefined && connection.serverId !== "" ) {
+						lastConnId = connection.serverId;
+						connections[connection.serverId] = connection;
+						callback(null, connection.threadId);
+					}
+					else {
+						callback(null, connection.serverId);
+					}
 				}
 			});	
 		},
@@ -111,6 +118,7 @@
 					callback(err.code + " : " + err.message);
 				}
 				else {
+					connCounter = connCounter + 1;
 					conn.serverId = dbconfig.__id;
 					conn.engine = dbconfig.engine;
 					conn.database = dbconfig.database;
@@ -122,9 +130,15 @@
 						};
 					}
 					clog("MS SQL Connected!!");
-					lastConnId = conn.serverId;
-					connections[conn.serverId] = conn;
-					callback(0, conn.serverId);
+					
+					if ( conn.serverId !== null && conn.serverId !== undefined && conn.serverId !== "" ) {
+						lastConnId = conn.serverId;
+						connections[conn.serverId] = conn;
+						callback(null, conn.serverId);
+					}
+					else {
+						callback(null, connCounter);
+					}
 				}
 			});
 			

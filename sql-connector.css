@@ -50,21 +50,10 @@
 /*--- Sql Connector Tool Bar Icon ---*/
 a#brackets-sql-connector-icon {
 	background-image: url( 'images/database.svg' );
-	background-origin: padding-box;
-	background-size: contain;
-	background-size: 18px 18px;
-	background-position: 4px 3px;
-	padding: 0px 3px;
 }
 
 a#brackets-sql-connector-icon.active {
-	/*background-position-y: -24px;*/
-	background-color: #000;
-	background-origin: padding-box;
-	background-size: contain;
-	background-size: 18px 18px;
-	background-position: 4px 3px;
-	padding: 0px 3px;
+	background-position-y: -24px;
 }
 
 /*--- PROJECT WIDE SEARCH ---*/
@@ -394,8 +383,8 @@ button.btn-server-setup > b {
 
 .brackets-sql-connector-status-indicator.executing button.btn-query-execute{
 	background-image: url('images/arrows_white.svg');
-	width: 16px;
-	height: 16px;
+	width: 12px;
+	height: 12px;
 	animation-name: rotateThis;
 	animation-duration: .5s;
 	animation-iteration-count: infinite;
@@ -413,11 +402,11 @@ button.btn-server-setup > b {
 	background-position: center center;
 	background-origin: content-box;
 	background-image: url('images/connection_white.svg');
-	width: 16px;
-	height: 16px;
+	width: 12px;
+	height: 12px;
 	padding: 0px;
 	margin: 0px;
-	padding-top: 3px;
+	padding-top: 5px;
 	margin-right: 5px;
 	display: inline-block;
 }
@@ -432,11 +421,11 @@ button.btn-server-setup > b {
 	background-position: center center;
 	background-origin: content-box;
 	background-image: url('images/connection_green.svg');
-	width: 16px;
-	height: 16px;
+	width: 12px;
+	height: 12px;
 	padding: 0px;
 	margin: 0px;
-	padding-top: 3px;
+	padding-top: 5px;
 	margin-right: 5px;
 	display: inline-block;
 }

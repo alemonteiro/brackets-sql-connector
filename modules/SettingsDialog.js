@@ -99,6 +99,7 @@ define( function( require, exports ) {
 		var $dialog = dialog.getElement();
 		$('input:text', $dialog).val('');
 		$('.input-id', $dialog).val(0);
+		$('.input-password', $dialog).val('');
 		$('.input-connection-id', $dialog).val(0);
 		$('.input-engine', $dialog)[0].selectedIndex = 0;
 		$('.input-port', $dialog).val(engines.mysql.port);
