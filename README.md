@@ -17,7 +17,7 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 ## Getting Started ##
 
 1. Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
-2. Search for SQL Browser;
+2. Search for SQL Browser or SQL Connector;
 3. Click Install;
 4. Click the SQL Connector icon (database with gears) on the right toolbar to open the browser panel;
 5. Click on the status bar label (Normally 'Not Connected') to open the Menu 
@@ -28,7 +28,6 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 	
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
 * Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
-* The browser has no function other than listing the stuff for now, in the near future it'll open the function/view/procedure content on the editor.
 * No SSL support yet
 
 ### Contributions And Attributions ###
@@ -52,6 +51,7 @@ in the /node folder.
 * Bug Fixes
 Browser panel not opening from pop menu
 Indicator Stauts keep saying is connected after Disconnect All
+No editor connection after disconnect
 
 ### V 0.3.0 ###
 * Added MS SQL Server support
