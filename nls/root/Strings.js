@@ -79,6 +79,9 @@ define( {
 	CONFIRM_EXECUTION_TITLE: "Execution Confirmation",
 	CONFIRM_EXECUTION_TEXT: "Are you sure you want to run this query?",
 	"FINISHED": "Finished",
+	"QUERY_AFFECTED_ROWS" : "Affected Rows",
+	"QUERY_CHANGED_ROWS" : "Changed Rows",
+	"QUERY_INSERTED_ID" : "Inserted ID",
 	"ERROR": "Error",
 	
 	// RESULT PANES

@@ -13,6 +13,7 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 * Multiple connections at once (but only one active for all editor)
 * Status Bar Menu For Connect/Disconnect and change Active Editor Connection
 * Store server settings in the brackets system preference file, not the root folder of your projects, so no worry about uploading your credentials to your git repo.
+* Connections are not per project. They are even maintained connected on project switch.
 
 ## Getting Started ##
 
@@ -23,12 +24,20 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 5. Click on the status bar label (Normally 'Not Connected') to open the Menu 
 8. Shortcuts: 
     * (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
-    
+   
+## Executing from editor ##
+
+* On the bottom panel should be a green connection icon with yout server name in front of it.
+* When you hit Alt-Enter 
+1. If there's any text select it will try to run it (in any type of file)
+2. If no text is select then only SQL Documents will be executed
+   
 ## Restrictions / Not Implemented stuff / Buggy ##
 	
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
 * Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
 * No SSL support yet
+* The Browser panel hides the second editor scroll bar. (This panel is an "fix" cause brackets doesn't have API for side panels yet).
 
 ### Contributions And Attributions ###
 
@@ -46,24 +55,39 @@ in the /node folder.
 
 ## Release Notes ##
 
-### V 0.3.3 ###
-* Bug Fixes
-Fixed execute from editor not working 
+### v 0.3.4 ###
+* Adopted brackets extension toolbar icon guidelines: https://github.com/adobe/brackets/wiki/Extension-Icon-Guidelines
+* Made result set and log text selectable
 
-### V 0.3.2 ###
-* Bug Fixes
-Fixed to tool bar icon not showing
-Fixed pop menu not showing when no setup existed
-Fixed test connection not working unless server settings was saved
+Bug Fixes
 
-### V 0.3.1 ###
+* Not showing number of fetched rows on bottom indicator after query error
+* Querying not executing if "Confirm modifications" was set
+
+### v 0.3.3 ###
+
+Bug Fixes
+
+* Fixed execute from editor not working 
+
+### v 0.3.2 ###
+
+Bug Fixes
+
+* Fixed to tool bar icon not showing
+* Fixed pop menu not showing when no setup existed
+* Fixed test connection not working unless server settings was saved
+
+### v 0.3.1 ###
 * Added default port for MS SQL Server (1433)
-* Bug Fixes
-Browser panel not opening from pop menu
-Indicator Stauts keep saying is connected after Disconnect All
-No editor connection after disconnect
 
-### V 0.3.0 ###
+Bug Fixes
+
+* Browser panel not opening from pop menu
+* Indicator Stauts keep saying is connected after Disconnect All
+* No editor connection after disconnect
+
+### v 0.3.0 ###
 * Added MS SQL Server support
 * Show view/procedure/function code in editor when selecting it from browser panel
 * Better re-establish last connections handling (not perfect tho)
@@ -72,14 +96,16 @@ No editor connection after disconnect
 * Fixed minor bugs
 * Improved connected server style
 
-V 0.2.0 - Fixed lots of bugs on interface due to last time renaming
-V 0.1.0 - Probably some bugs =x - Should disconnect from server before closing brackets
+##### v 0.2.0 #####
+* Fixed lots of bugs on interface due to last time renaming
 
-## TODO ##
+##### v 0.1.0 #####
+* Probably some bugs =x 
+* Should disconnect from server before closing brackets
 
+### TODO ###
 * Use node mysql connection pools
 * Configurable one connection and result sets per editor
-
 
 ### TODO - Code Stuff ###
 

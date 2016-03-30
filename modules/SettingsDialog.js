@@ -170,7 +170,7 @@ define( function( require, exports ) {
 		
 		var dialog = Dialogs.showModalDialogUsingTemplate( compiledTemplate );
 		
-		dialog.getElemet().on('click', 'button', function(evt) {
+		$(dialog.getElement()).on('click', 'button', function(evt) {
 			var id = $(this).data('button-id');
 			if ( id === 'execute') {
 				callback();

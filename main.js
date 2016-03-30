@@ -481,21 +481,6 @@ define(function (require, exports, module) {
 		});
 	}
 	
-	/** 
-	* List database tables
-	*/
-	function showView(serverInfo, table, callback) {
-		var query = 'SELECT TABLE_NAME AS `Name`, VIEW_DEFINITION AS `ViewDefinition`, CHARACTER_SET_CLIENT as `charSet`, COLLATION_CONNECTION as `collation` ' +
-					'FROM INFORMATION_SCHEMA.VIEWS ' +
-    					"WHERE TABLE_SCHEMA = '"+serverInfo.database+"' " +
-						" AND TABLE_NAME = '"+table+"'; ";
-		
-		_nodeDomain.exec('query',  query).done(function(response){
-			var view = response[1][0];
-			callback.call(callback, view);
-		});
-	}
-		
 	/**
 	* Disconnect from server
 	*/					
@@ -642,21 +627,44 @@ define(function (require, exports, module) {
 			.exec('query', server.__id, sql)
 			.done(function(response) {			
 			
-			ResultSets.log(Strings.FINISHED, sql);
 			
-			if ( typeof callback === 'function' ) {
-				if ( $.isArray(response[0][0]) ) {
-					for(var i=0,il=response[0].length;i<il;i++) {
-						callback(false, response[0][i], response[1][i]);
+			if ( response[0] === null && typeof response[1] === 'object' && response[1].hasOwnProperty('affectedRows') ) {
+				response = response[1];
+				/*affectedRows: 0, changedRows: 0, fieldCount: 0, insertId: 0, message: "", protocol41: true, serverStatus: 34, warningCount: 0*/
+				var msg = typeof response.message === 'string' && response.message.length > 0 ? response.menssage :
+						(Strings.QUERY_AFFECTED_ROWS + ": " + response.affectedRows + 
+						( response.insertId > 0 ? Strings.QUERY_INSERTED_ID + ": " + response.insertId : ''));
+			
+				ResultSets.log(Strings.FINISHED, msg);
+				$('label', $indicator).removeClass('executing').html(msg);
+			}
+			else {
+				var str;
+				if ( $.isArray(response[0][0]) ) str = "("+response[0].length+" sets)";
+				else str = "("+response[1].length+" rows)";
+				
+				ResultSets.log(Strings.FINISHED, msg);
+				$('label', $indicator).removeClass('executing').html(Strings.FINISHED + ": " + msg);
+				
+				if ( typeof callback === 'function' ) {
+					if ( $.isArray(response[0][0]) ) {
+						for(var i=0,il=response[0].length;i<il;i++) {
+							callback(false, response[0][i], response[1][i]);
+						}
 					}
-				}
-				else {
-					callback(false, response[0], response[1]);
+					else {
+						callback(false, response[0], response[1]);
+					}
 				}
 			}
 		}).fail(function(err){
 			ResultSets.log(Strings.QUERY_ERROR, err);
-			$('label', $indicator).html(Strings.QUERY_ERROR);
+			$('label', $indicator).html(Strings.QUERY_ERROR + ': ' + (
+				typeof err === 'string' ? err : 
+				(typeof err.code === 'string' ? err.code :
+					(typeof err.message === 'string' ? err.message : JSON.stringify(err))
+				)
+			));
 			callback(err);
 		});
 	}

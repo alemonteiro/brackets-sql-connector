@@ -22,10 +22,14 @@
 .brackets-sql-connector-browser table {
 	width: 100%;
 	position: relative;
+  	-webkit-user-select: text; 
+  	user-select: text;         
 }
 
 .brackets-sql-connector-browser td {
 	vertical-align: middle;
+  	-webkit-user-select: text; 
+  	user-select: text;         
 }
 
 .brackets-sql-connector-browser td.filename{
@@ -454,11 +458,17 @@ button.btn-server-setup > b {
 	border-collapse: collapse;
 	border: 1px solid #AAA;
 	background: #2c2c2c;
+	
+  	-webkit-user-select: text; 
+  	user-select: text;         
 }
 .brackets-sql-connector-result td {		
 	border-right: 1px solid #999;
 	text-align: center;
 	padding: 1px;
+	
+  	-webkit-user-select: text; 
+  	user-select: text;         
 }
 .brackets-sql-connector-result tbody tr {
 	background: #323232;	
@@ -513,18 +523,35 @@ button.btn-server-setup > b {
 #brackets-sql-connector-log-pane  ul li {
 	display: block;
 	border-bottom: 
+		
+  	-webkit-user-select: text; 
+  	user-select: text;         
 }
+
 #brackets-sql-connector-log-pane  ul li > * { 
 	display: inline-block;
 }
 #brackets-sql-connector-log-pane  ul li label {
 	margin: 0 5px;	
+	display: inline-block;
+  	-webkit-user-select: text; 
+  	user-select: text;       
 }
 #brackets-sql-connector-log-pane pre {
 	background: #2c2c2c;
 	margin-left: 3px;
+	display: inline-block;
+  	-webkit-user-select: text; 
+  	user-select: text;       
 }
-#brackets-sql-connector-log-pane pre {
-	background: #2c2c2c;
+.brackets-sql-connector-dialog pre {
+	background: #090909;
 	margin-left: 3px;
+  	-webkit-user-select: text; 
+  	user-select: text;       
+}
+
+code {
+  	-webkit-user-select: text; 
+  	user-select: text;       
 }
