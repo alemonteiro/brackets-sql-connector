@@ -1,3 +1,5 @@
+/*jshint node: true*/
+/* globals define*/
 define( {
 	// EXTENSION.
 	EXTENSION_NAME: "SQL Connector",
@@ -47,8 +49,18 @@ define( {
 	MANAGE_SERVERS: "Manage Servers",
 	ENGINE: "Engine",
 	VIEW_LOG: "View Log",
+    VIEW_MODIFICATIONS: "View Modifications",
+    VIEW_MODIFICATIONS_SCRIPT: "View Full Script",
+    CLEAR_MODIFICATIONS: "Clar Modifications",
+    CLEAR_MODIFICATIONS_CONFIRMATION: "Are you sure you want to clear {{modifications}}?", // {{modifications}} will holder either the length of modifications being cleared or the query when removing one
+    CLEAR_LOG: "Clear Log",
 	LOG: "Log",
-	
+    MODIFICATIONS: "Modifications",
+	DATE: "Date",
+    PROJECT: "Project",
+    FILE: "File",
+    FILE_ORIGIN: "File Origin",
+    SQL_COMMAND: "SQL Command",
 	
 	DATABASE: "Database",
 	DATABASES: "Database",
@@ -69,7 +81,9 @@ define( {
 	NO_VIEWS: "No views here",
 	NO_PROCEDURES: "There are no procedures created",
 	NO_FUNCTIONS: "No function on this database",
-	
+	NO_LOG: "No log to show",
+    NO_MODIFICATIONS: "No modifications made",
+
 	// EXECUTIONS && QUERYS
 	QUERY: "Query",
 	QUERY_ERROR: 'Query Error',
@@ -99,6 +113,8 @@ define( {
 	LIST_ROWS: "List Rows",
 	
 	// SETTINGS DIALOG.
+    EXTENSION_SETTINGS: "Extension Settings",
+    AUTO_RECONNECT_ON_START: "Auto reconnect last connection on brackets start",
 	SETTINGS_DIALOG_TITLE:        "SQL Connector - Connection Settings",
 	SETTINGS_DIALOG_ENGINE: 	  "Engine",
 	SETTINGS_DIALOG_HOST: 		  "Host",
@@ -112,7 +128,8 @@ define( {
 	SETTINGS_DIALOG_SAVE_TO_APLLY: "Click save to aplly changes",
 	SETTINGS_DIALOG_SAVED: "Server Settings Saved",
 	SETTINGS_CONFIRM_MODIFICATIONS: "Confirm execution of modification scripts",
-	
+	SETTINGS_SAVE_MODIFICATIONS: "Save modification scripts",
+
 	// NO SERVER SETUP DIALOG
 	NO_SERVER_SETUP: "SQL Connector - No Connections Created",
 	

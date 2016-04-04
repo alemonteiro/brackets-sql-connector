@@ -11,6 +11,7 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 * Result Sets Panel with log viewer
 * Create and store multiple server connections (settings are not per project, same server can be used on any project)
 * Multiple connections at once (but only one active for all editor)
+* Store modification scripts from each server
 * Status Bar Menu For Connect/Disconnect and change Active Editor Connection
 * Store server settings in the brackets system preference file, not the root folder of your projects, so no worry about uploading your credentials to your git repo.
 * Connections are not per project. They are even maintained connected on project switch.
@@ -32,6 +33,12 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 1. If there's any text select it will try to run it (in any type of file)
 2. If no text is select then only SQL Documents will be executed
    
+## Stored Modifications ##
+
+* There's a setting for saving executed SQLs that makes changes to the database incluing insert, update, delete, alter, change, remove, drop, create and modify
+* Saved modifications are stored by server, not by project
+* You can delete an saved modification
+
 ## Restrictions / Not Implemented stuff / Buggy ##
 	
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
@@ -54,6 +61,17 @@ npm install
 in the /node folder.
 
 ## Release Notes ##
+
+### v 0.4.0 ###
+
+* Added save modifications support
+* Added preferences option to connect to last connection on brackets startup (no interface for it yet tho)
+
+Bug Fixes
+
+* Pop menu not closing when losing focus fixed
+* Stopped trying to load children of columns on browser panel
+* Added 'drop' as modification script
 
 ### v 0.3.4 ###
 * Adopted brackets extension toolbar icon guidelines: https://github.com/adobe/brackets/wiki/Extension-Icon-Guidelines

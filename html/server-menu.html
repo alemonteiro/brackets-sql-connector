@@ -1,4 +1,4 @@
-<ul class="dropdown-menu dropdownbutton-popup brackets-sql-connector-servers-menu {{MENU_STATUS}}" tabindex="-1">
+<ul class="dropdown-menu dropdownbutton-popup brackets-sql-connector-servers-menu {{MENU_STATUS}}"  tabindex="1">
 	<li data-action="new-connection">
 		<a href="#">{{Strings.MANAGE_SERVERS}}</a>
 	</li>
@@ -38,9 +38,14 @@
 			{{PANEL_ACTION}} {{Strings.RESULT_PANEL}}
 		</a>
 	</li>
-	<li data-action="view-log" data-id="0">
+	<li data-action="view-log" data-id="0" class="view-log">
 		<a href="#">
 			{{Strings.VIEW_LOG}}
+		</a>
+	</li>
+	<li data-action="view-modifications" data-id="0" class="view-modifications">
+		<a href="#">
+			{{Strings.VIEW_MODIFICATIONS}}
 		</a>
 	</li>
 	<li class="separator">&nbsp;</li>

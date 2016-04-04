@@ -3,15 +3,30 @@
         <h1 class="dialog-title">{{ Strings.SETTINGS_DIALOG_TITLE }}</h1>
     </div>
     {{#info}}
-    <div class="modal-body table-striped tab-content brackets-sql-connector-server-config-form brackets-sql-connector-clearfix">
-       <div class="brackets-sql-connector-server-list-panel">
+    <div class="modal-body table-striped tab-content">
+        <!--
+        <fieldset>
+            <legend>{{Strings.EXTENSION_SETTINGS}}</legend>
+            <div>
+                <div class="field-container auto-reconnect checkbox">
+                    <label>
+                        <input type="checkbox" class="input-auto-reconnect">
+                        {{Strings.AUTO_RECONNECT_ON_START}}
+                    </label>
+                </div>
+            </div>
+        </fieldset>
+        -->
+
+        <div class="brackets-sql-connector-server-config-form brackets-sql-connector-clearfix" >
+           <div class="brackets-sql-connector-server-list-panel">
        		<h2>
        			{{ Strings.SETTINGS_DIALOG_SERVERS }}
        			<button data-button-id="new"  class="dialog-button btn secundary">{{ Strings.SETTINGS_DIALOG_NEW_SERVER }}</button>
        		</h2>
        		<ul id="brackets-sql-connector-server-list"></ul>
        </div>
-       <div class="brackets-sql-connector-server-list-panel">
+           <div class="brackets-sql-connector-server-list-panel">
 		   <div class="field-container name">
 				<label>
 					{{ Strings.SETTINGS_DIALOG_ENGINE }}:
@@ -65,6 +80,13 @@
        				{{Strings.SETTINGS_CONFIRM_MODIFICATIONS}}
        			</label>
        		</div>
+       		<div class="field-container save-modifications checkbox">
+       			<label>
+       				<input type="checkbox" class="input-save-modifications">
+       				{{Strings.SETTINGS_SAVE_MODIFICATIONS}}
+       			</label>
+       		</div>
+        </div>
         </div>
     </div>
     {{/info}}
