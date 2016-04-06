@@ -691,10 +691,7 @@ define(function (require, exports, module) {
 		_nodeDomain
 			.exec('query', server.__id, sql)
 			.done(function(response) {			
-			
-            if ( server.saveModifications === true && hasModification ) {
-                Modifications.save(server.__id, sql, fileOrigin);
-            }
+
             try{
                 if ( server.saveModifications === true && hasModification ) {
                     Modifications.save(server.__id, sql, fileOrigin);
@@ -703,7 +700,7 @@ define(function (require, exports, module) {
                 if ( response[0] === null && typeof response[1] === 'object' && response[1].hasOwnProperty('affectedRows') ) {
                     response = response[1];
                     /*affectedRows: 0, changedRows: 0, fieldCount: 0, insertId: 0, message: "", protocol41: true, serverStatus: 34, warningCount: 0*/
-                    var msg = typeof response.message === 'string' && response.message.length > 0 ? response.menssage :
+                    var msg = typeof response.message === 'string' && response.message.length > 0 ? response.message :
                             (Strings.QUERY_AFFECTED_ROWS + ": " + response.affectedRows +
                             ( response.insertId > 0 ? Strings.QUERY_INSERTED_ID + ": " + response.insertId : ''));
 
@@ -997,6 +994,31 @@ define(function (require, exports, module) {
 		}
 	}
 	
+    function formatSQL(str) {
+
+        if ( str.indexOf("\n\t") < 1 ) {
+            // Line Break && Single Tabs
+            var reg = /(select |from |where |order |group |having |limit )/gi;
+            str = str.replace(reg, "\n$&\n\t");
+
+            // Line Break && Double tabs
+            reg = /(inner join |right join |left join |outter join )/gi;
+            str = str.replace(reg, "\n\t\t$&");
+
+            // Line Break && Double tabs
+            reg = /(on )/gi;
+            str = str.replace(reg, "\n\t\t\t$&");
+
+            reg = /(,)/gi;
+            str = str.replace(reg, "$&\n\t");
+
+            reg = /(and )/gi;
+            str = str.replace(reg, "\n\t$&");
+            return str;
+        }
+        return str;
+    }
+
 	/**
 	* Show SQL Definition of an view/procedure/function
 	*/
@@ -1012,6 +1034,7 @@ define(function (require, exports, module) {
 		}
 		
 		if ( typeof def === 'string' ) {
+            def = formatSQL(def);
 			new_files_count = new_files_count + 1;
 			var doc = DocumentManager.getCurrentDocument();
 			
@@ -1061,7 +1084,7 @@ define(function (require, exports, module) {
         CommandManager.register(Strings.VIEW_MODIFICATIONS, Cmds.VIEW_MODIFICATIONS, viewModifications);
 		CommandManager.register(Strings.VIEW_MODIFICATIONS_SCRIPT, Cmds.VIEW_MODIFICATIONS_SCRIPT, viewModificationsScript);
         CommandManager.register(Strings.CLEAR_MODIFICATIONS, Cmds.CLEAR_MODIFICATIONS, clearModifications);
-        CommandManager.register(Strings.CLEAR_LOGS, Cmds.CLEAR_LOG, clearLog);
+        CommandManager.register(Strings.CLEAR_LOG, Cmds.CLEAR_LOG, clearLog);
         CommandManager.register(Strings.REFRESH, Cmds.REFRESH, menuRefresh);
 
 		menu.addMenuItem(Cmds.EXECUTE_CURRENT, 'Alt-Enter');

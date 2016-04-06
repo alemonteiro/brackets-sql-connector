@@ -66,6 +66,11 @@ in the /node folder.
 
 * Added context menu for refreshing browser itens and disconnecting from server
 
+Bug Fixes
+
+* Fixed duplicating saved modification 
+* Fixed indicator stuck at "Executing..." after running updates
+
 ### v 0.4.0 ###
 
 * Added save modifications support
