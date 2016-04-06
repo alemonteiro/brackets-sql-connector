@@ -46,6 +46,7 @@ define( {
 	SERVER: "Server",
 	OPEN: "Open",
 	CLOSE: "Close",
+    REFRESH: "Refresh",
 	MANAGE_SERVERS: "Manage Servers",
 	ENGINE: "Engine",
 	VIEW_LOG: "View Log",
@@ -97,7 +98,8 @@ define( {
 	"QUERY_CHANGED_ROWS" : "Changed Rows",
 	"QUERY_INSERTED_ID" : "Inserted ID",
 	"ERROR": "Error",
-	
+	"PARSE_ERROR": "Parse Error",
+
 	// RESULT PANES
 	RESULT_SET: "Result Set",
 	RESULT_PANEL: "Result Panel",

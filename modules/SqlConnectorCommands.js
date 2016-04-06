@@ -19,6 +19,7 @@ define( function( require, exports, module ) {
         VIEW_MODIFICATIONS   : prefix+'.viewModifications',
         VIEW_MODIFICATIONS_SCRIPT : prefix+'.viewModificationsScript',
         CLEAR_MODIFICATIONS : prefix+'.clearModifications',
-        CLEAR_LOG : prefix+'.clearLog'
+        CLEAR_LOG : prefix+'.clearLog',
+        REFRESH : prefix+'.refresh'
 	};
 });

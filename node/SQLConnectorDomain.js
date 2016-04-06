@@ -50,7 +50,7 @@
 					return this.status === "conected";
 				};
 			}
-			clog("Connecting to " + connection.host);
+			//clog("Connecting to " + connection.host);
 			
 			connection.connect(function (err) {
 				if (err) {
@@ -90,7 +90,7 @@
 			
 			if ( ! conn ) callback('no connection found');
 			
-			clog("Querying " + connId + " WITH " + query);
+			//clog("Querying " + connId + " WITH " + query);
 			
 			conn.query(query, function (err, rows, fields) {
 				if (err) {
@@ -111,7 +111,7 @@
 				port: dbconfig.port
 			};
 			
-			clog("MS SQL Connecting", config);
+			//clog("MS SQL Connecting", config);
 			var conn = mssql.connect(config, function(err) {
 				if (err) {
 					clog("MS SQL Conn Error", err);
@@ -129,7 +129,7 @@
 							return this.connected === true;
 						};
 					}
-					clog("MS SQL Connected!!");
+					//clog("MS SQL Connected!!");
 					
 					if ( conn.serverId !== null && conn.serverId !== undefined && conn.serverId !== "" ) {
 						lastConnId = conn.serverId;
@@ -143,7 +143,7 @@
 			});
 			
 			mssql.on('error', function(err) {
-				clog("MS SQL Error", err);
+				//clog("MS SQL Error", err);
 				callback(err.code + " : " + err.message);
 				//_domainManager.emitEvent(domainName, 'error', [err.message, err]);
 			});
@@ -171,7 +171,7 @@
 				rows = [],
 				errors = []; // or: var request = connection1.request(); 
 			
-			clog("MS SQL Querying", sql);
+			//clog("MS SQL Querying", sql);
 			request.multiple = true;
 			request.batch(sql, function(err, recordSets) {
 				//if ( !err ) console.dir(recordSets);
@@ -235,7 +235,7 @@
 			var connection = _getConn(connId);
 			if ( ! connection ) return callback('no connection found');
 			
-			clog(arguments.length + ": Querying to " + connection.threadId + " => " + query);
+			//clog(arguments.length + ": Querying to " + connection.threadId + " => " + query);
 			
 			connection.__query(connId, query, callback);
 		},

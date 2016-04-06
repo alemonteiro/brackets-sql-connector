@@ -62,6 +62,10 @@ in the /node folder.
 
 ## Release Notes ##
 
+### v 0.4.1 ###
+
+* Added context menu for refreshing browser itens and disconnecting from server
+
 ### v 0.4.0 ###
 
 * Added save modifications support
