@@ -926,12 +926,16 @@ define(function (require, exports, module) {
 		$('li.disconnect-from', $ul).after(htmlConnected);
 		$('li.set-current-connection', $ul).after(htmlSetCurrent);
 		
-		$ul.on('click', 'a', function(evt) {
+		$ul.on('mousedown', 'a', function(evt) {
 			evt.stopPropagation();
+			evt.preventDefault();
+
 			var $li = $(this).parent(),
 				action = $li.data("action"),
 				id = $li.data("id");
 			
+			$ul.remove();
+
 			if ( action === "disconnect-all") {
 				CommandManager.execute(Cmds.DISCONNECT_ALL);
 			}
@@ -969,7 +973,6 @@ define(function (require, exports, module) {
 			else if (action === "view-modifications-script" ) {
 				CommandManager.execute(Cmds.VIEW_MODIFICATIONS_SCRIPT);
 			}
-			$ul.remove(); 
 		}).on('blur', function(evt) {
 			$ul.remove();	
 		})
@@ -996,26 +999,44 @@ define(function (require, exports, module) {
 	
     function formatSQL(str) {
 
-        if ( str.indexOf("\n\t") < 1 ) {
-            // Line Break && Single Tabs
-            var reg = /(select |from |where |order |group |having |limit )/gi;
-            str = str.replace(reg, "\n$&\n\t");
 
-            // Line Break && Double tabs
-            reg = /(inner join |right join |left join |outter join )/gi;
-            str = str.replace(reg, "\n\t\t$&");
-
-            // Line Break && Double tabs
-            reg = /(on )/gi;
-            str = str.replace(reg, "\n\t\t\t$&");
-
-            reg = /(,)/gi;
-            str = str.replace(reg, "$&\n\t");
-
-            reg = /(and )/gi;
-            str = str.replace(reg, "\n\t$&");
-            return str;
+        if ( str.indexOf("\n\t") > -1 ) {
+           return str;
         }
+
+		var steps = [
+			{
+				// "Main" Words: Break before and after with one indent after
+				search: /(select |from |where |order |group |having |limit )/gi,
+				replace: "\n$&\n\t"
+			},
+			{
+				// JOINS: Break before and after with two indent before
+				search: /(inner join |right join |left join |outter join )/gi,
+				replace: "\n\t\t$&"
+			},
+			{
+				// ON: Break before and tree indent before
+				search: /( on)/gi,
+				replace: "\n\t\t\t$&"
+			},
+			{
+				// ',' not inside (): Break after with one indent after
+				search: /,(?![^\(]*\))/gi,
+				replace: "$&\n\t"
+			},
+			{
+				// AND: Break Before with one indent before
+				search: /( and)/gi,
+				replace: "\n\t$&"
+			}
+		];
+
+		for(var i=0,il=steps.length,s;i<il;i++) {
+			s = steps[i];
+			str = str.replace(s.search, s.replace);
+		}
+
         return str;
     }
 

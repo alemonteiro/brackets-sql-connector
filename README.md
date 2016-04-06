@@ -62,6 +62,11 @@ in the /node folder.
 
 ## Release Notes ##
 
+### v 0.4.2 ###
+
+* Added minimal sql formatting for viewing MySQL Views/Functions/Stored Procedures that have no indentention
+* Fixed pop menu closing without executing action on windows
+
 ### v 0.4.1 ###
 
 * Added context menu for refreshing browser itens and disconnecting from server
