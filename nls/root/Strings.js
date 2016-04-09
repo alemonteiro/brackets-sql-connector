@@ -53,6 +53,14 @@ define( {
     VIEW_MODIFICATIONS: "View Modifications",
     VIEW_MODIFICATIONS_SCRIPT: "View Full Script",
     CLEAR_MODIFICATIONS: "Clar Modifications",
+    EXPORT: "Export",
+    IMPORT: "Import",
+    SHOW: "Show",
+    CREATE: "Create",
+    ALTER: "Alter",
+    DROP: "Drop",
+    MODIFY: "Modify",
+
     CLEAR_MODIFICATIONS_CONFIRMATION: "Are you sure you want to clear {{modifications}}?", // {{modifications}} will holder either the length of modifications being cleared or the query when removing one
     CLEAR_LOG: "Clear Log",
 	LOG: "Log",

@@ -1,0 +1,88 @@
+<div id="brackets-sql-connector-server-list-dialog" class="modal">
+    <div class="modal-header">
+        <h1 class="dialog-title">{{ Strings.SETTINGS_DIALOG_TITLE }}</h1>
+    </div>
+    {{#info}}
+    <div class="modal-body table-striped tab-content">
+
+        <div class="brackets-sql-connector-server-config-form brackets-sql-connector-clearfix" >
+           <div class="brackets-sql-connector-server-list-panel">
+
+                <div class="field-container checkbox">
+                    <label>
+                        <input type="checkbox" name="autoReconnectOnLoad">
+                        {{Strings.AUTO_RECONNECT_ON_LOAD}}
+                    </label>
+                </div>
+                <div class="field-container checkbox">
+                    <label>
+                        <input type="checkbox" name="autoReconnectOnLoad">
+                        {{Strings.AUTO_OPEN_BROWSER_ON_CONNECT}}
+                    </label>
+                </div>
+                <div class="field-container checkbox">
+                    <label>
+                        <input type="checkbox" name="autoReconnectOnLoad">
+                        {{Strings.AUTO_OPEN_RESULT_SET_ON_QUERY}}
+                    </label>
+                </div>
+                <div class="field-container checkbox">
+                    <label>
+                        <input type="checkbox" name="autoReconnectOnLoad">
+                        {{Strings.AUTO_OPEN_MODIFICATIONS_ON_EXECUTION}}
+                    </label>
+                </div>
+            </div>
+
+            <div class="brackets-sql-connector-server-list-panel">
+                <h2>{{ Strings.KEY_BINDINGS }}:</h2>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.EXECUTE_CURRENT }}:
+                    </label>
+                    <input type="text" name="executeCurrent" value="{{executeCurrent}}"/>
+                </div>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.TOGGLE_RESULT_SET_PANE }}:
+                    </label>
+                    <input type="text" name="toggleResultSetPane" value="{{toggleResultSetPane}}"/>
+                </div>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.TOGGLE_LOG_PANE }}:
+                    </label>
+                    <input type="text" name="toggleLogPane" value="{{toggleLogPane}}"/>
+                </div>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.TOGGLE_BROWSER }}:
+                    </label>
+                    <input type="text" name="toggleBrowser" value="{{toggleBrowser}}"/>
+                </div>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.MANAGE_SERVERS }}:
+                    </label>
+                    <input type="text" name="manageServer" value="{{manageServer}}"/>
+                </div>
+                <div class="field-container">
+                    <label>
+                        {{ Strings.DISCONNECT_ALL }}:
+                    </label>
+                    <input type="text" name="disconnectAll" value="{{disconnectAll}}"/>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {{/info}}
+
+    <div class="modal-footer">
+       	<label class="test-connection-status"></label>
+        <button data-button-id="ok" class="dialog-button btn">{{ Strings.OK }}</button>
+        <button data-button-id="save" class="dialog-button btn primary">{{ Strings.SAVE }}</button>
+        <button data-button-id="test" class="dialog-button btn">{{ Strings.TEST_CONNECTION }}</button>
+        <button data-button-id="cancel" class="dialog-button btn">{{ Strings.CANCEL }}</button>
+    </div>
+</div>

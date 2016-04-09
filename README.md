@@ -5,7 +5,7 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 
 ## Features ##
 
-* V 0.3.1 Supports MySQL and MS SQL Server(>=2005)
+* V 0.5.0 Supports MySQL, MS SQL Server(>=2005) and PostgreSQL
 * Browser Panel (shows tables, fields, views, functions and procedures)
 * Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
 * Result Sets Panel with log viewer
@@ -61,6 +61,16 @@ npm install
 in the /node folder.
 
 ## Release Notes ##
+
+### v 0.5.0 ###
+
+* Added PostreSQL support
+* Added SHOW Create e ALTER for Views
+* Added view full modification script
+
+Bug Fixes
+
+* Fixed MySQL Views showing as tables on browser
 
 ### v 0.4.2 ###
 

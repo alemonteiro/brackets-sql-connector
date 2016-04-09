@@ -1,7 +1,7 @@
 {
   "name": "brackets-sql-connector-domain",
-  "version": "0.1.0",
-  "description": "Brackets domain for implementing the extension MySQL Browser",
+  "version": "0.2.0",
+  "description": "Brackets domain for implementing the extension SQL Connector",
   "license": "MIT",
   "author": {
 		"name": "Alê Monteiro",
@@ -14,6 +14,7 @@
   	},
   "dependencies": {
 	  "mysql": ">=2.10.0",
-	  "mssql": ">=3.1.2"
+	  "mssql": ">=3.1.2",
+      "pg": ">=4.5.2"
   }
 }

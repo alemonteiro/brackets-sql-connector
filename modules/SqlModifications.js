@@ -73,7 +73,7 @@ define(function (require, exports, module) {
                 response = '';
                 for (var i = 0, il = server.modifications.length, m; i < il; i++) {
                     m = server.modifications[i];
-                    response += Mustache.render(modificationRowTemplate, {
+                    response += Mustache.render(SqlTemplate, {
                         Strings: Strings,
                         Date: m.date,
                         Project: m.project,

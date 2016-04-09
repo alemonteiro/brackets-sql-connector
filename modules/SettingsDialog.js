@@ -21,6 +21,9 @@ define(function (require, exports) {
             },
             mssql: {
                 port: 1433
+            },
+            postgresql: {
+                port: 5432
             }
         },
         isNewObject = false,

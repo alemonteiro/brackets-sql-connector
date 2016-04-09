@@ -2,9 +2,9 @@
 module.exports = {
 
 	showTables: function(db) {
-		return ("SHOW TABLES" +
+		return ("SHOW FULL TABLES" +
 				(typeof db === 'string' ? ' IN ' + db : '') +
-			";");
+			" WHERE Table_Type = 'BASE TABLE';");
 	},
 
 	showFields: function(db, table) {

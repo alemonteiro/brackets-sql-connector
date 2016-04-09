@@ -316,20 +316,27 @@ define(function (require, exports, module) {
 				
 			_nodeDomain.exec('list_foreign_keys', serverInfo.__id, table).done(function(response2)  {
 				var fks = response2[1],
-				html = (function() {
+                    nameProp = 'Field',
+                    typeProp = 'Type';
+                if ( serverInfo.engine === "postgresql" ) {
+                    nameProp = 'field';
+                    typeProp = 'type';
+                }
+				var html = (function() {
 					var html  = '';
 					for(var i=0,il=rows.length,r,n,fk,pk;i<il;i++) {
 						fk = false;
 						r=rows[i];
 						pk = r.Key === 'PRI';
+
 						for(var j=0,jl=fks.length;j<jl;j++) {
-							if ( fks[j].Field == r.Field ) {
+							if ( fks[j][nameProp] == r[nameProp] ) {
 								fk = fks[j];
 								break;
 							}
 						}
-						html += '<li data-name="'+r.Field+'" data-type="'+r.Type+'" class="field' + (fk !== false ? ' fk': '') + (pk?' pk':'') + '">' +
-									'<label>'+r.Field+'<span class="data-type">' + r.Type + '<span></label></li>';
+						html += '<li data-name="'+r[nameProp]+'" data-type="'+r[typeProp]+'" class="field' + (fk !== false ? ' fk': '') + (pk?' pk':'') + '">' +
+									'<label>'+r[nameProp]+'<span class="data-type">' + r[typeProp] + '<span></label></li>';
 					}
 					return html;
 				}());
@@ -356,13 +363,13 @@ define(function (require, exports, module) {
         if ( !fields || !rows || fields.length === 0 || rows.length === 0) return '';
 		var html  = '', 
 			f = fields[nameFieldIndex||0],
-			fn = f.name||f.Field||f.Name||f.Column;
+			fn = f.name||f.Field||f.field||f.Name||f.Column;
 		for(var i=0,il=rows.length,r,n,fk;i<il;i++) {
 			fk = false;
 			r=rows[i];
 			n = r[fn];
 
-			html += '<li data-name="'+n+'" data-type="'+(r.Type||type)+'" data-definition="'+r.Definition+'" >' +
+			html += '<li data-name="'+n+'" data-type="'+(r.Type||r.type||type)+'" data-definition="'+(r.Definition||r.definition)+'" >' +
 						'<label>'+n+'</label></li>';
 		}
 		return html;
@@ -856,6 +863,107 @@ define(function (require, exports, module) {
 		});
 	}
 	
+    /**
+     * Simple SQL Formatting
+     * @param   {string}   str SQL Query to format
+     * @returns {string} Formatted SQL Query
+     */
+    function formatSQL(str) {
+
+        if ( str.indexOf("\n\t") > -1 ) {
+           return str;
+        }
+
+		var steps = [
+            {
+                // End of Command: Two breaks after
+                search: /;/gi,
+                replace: "$&\n\n"
+            },
+			{
+				// "Main" Words: Break before and after with one indent after
+				search: /(select |from |where |order |group |having |limit )/gi,
+				replace: "\n$&\n\t"
+			},
+			{
+				// JOINS: Break before and after with two indent before
+				search: /(inner join |right join |left join |outter join )/gi,
+				replace: "\n\t\t$&"
+			},
+			{
+				// ON: Break before and tree indent before
+				search: /( on)/gi,
+				replace: "\n\t\t\t$&"
+			},
+			{
+				// ',' not inside (): Break after with one indent after
+				search: /,(?![^\(]*\))/gi,
+				replace: "$&\n\t"
+			},
+			{
+				// AND: Break Before with one indent before
+				search: /( and)/gi,
+				replace: "\n\t$&"
+			}
+		];
+
+		for(var i=0,il=steps.length,s;i<il;i++) {
+			s = steps[i];
+			str = str.replace(s.search, s.replace);
+		}
+
+        return str;
+    }
+
+    /**
+     * Creates new Untitled document or use the current selected one (replaces text)
+     * @param {string} sql SQL to Show
+     */
+    function showSQLOnFile(sql) {
+        new_files_count = new_files_count + 1;
+        var doc = DocumentManager.getCurrentDocument();
+        if ( !doc.isUntitled() ) {
+            doc = DocumentManager.createUntitledDocument(new_files_count, ".sql");
+        }
+        doc.setText(sql);
+        if ( typeof  ProjectManager.setCurrentFile === 'function' ) {
+            ProjectManager.setCurrentFile(doc.file.fullPath);
+        }
+        else if ( typeof DocumentManager.setCurrentDocument === 'function' ) {
+            DocumentManager.setCurrentDocument(doc);
+        }
+    }
+
+    /* Export All Views */
+    function exportAllViews(serverInfo, command) {
+        command = (command || "CREATE") + " ";
+        _nodeDomain.exec('list_views', serverInfo.__id, serverInfo.database).done(function(response){
+			var fields = response[0],
+				views = response[1],
+                query = "";
+
+            for(var i=0,il=views.length,v;i<il;i++) {
+                v = views[i];
+                query += "\n"+command+ ' VIEW ' + (v.Name||v.name) + " AS " + formatSQL(v.Definition||v.definition) + ";\n";
+            }
+            showSQLOnFile(query);
+		})
+		.fail(function(err) {
+			ResultSets.log('Show Views Error', err);
+		});
+    }
+
+    /**
+     * Export Definition to new or open untitled sql file
+     * @param {string} command    'CREATE' or 'ALTER'
+     * @param {string} type       'VIEW', 'FUNCTION', or 'PROCEDURE'
+     * @param {string} name       object name
+     * @param {string} definition SQL Definition
+     */
+    function exportDefinition(command, name, type, definition) {
+        showSQLOnFile("\n"+command+ " " + type + " " + name + " AS " + formatSQL(definition) + ";");
+    }
+
 	/**
 	 * Show server pop up menu
 	 */
@@ -996,49 +1104,6 @@ define(function (require, exports, module) {
 			});
 		}
 	}
-	
-    function formatSQL(str) {
-
-
-        if ( str.indexOf("\n\t") > -1 ) {
-           return str;
-        }
-
-		var steps = [
-			{
-				// "Main" Words: Break before and after with one indent after
-				search: /(select |from |where |order |group |having |limit )/gi,
-				replace: "\n$&\n\t"
-			},
-			{
-				// JOINS: Break before and after with two indent before
-				search: /(inner join |right join |left join |outter join )/gi,
-				replace: "\n\t\t$&"
-			},
-			{
-				// ON: Break before and tree indent before
-				search: /( on)/gi,
-				replace: "\n\t\t\t$&"
-			},
-			{
-				// ',' not inside (): Break after with one indent after
-				search: /,(?![^\(]*\))/gi,
-				replace: "$&\n\t"
-			},
-			{
-				// AND: Break Before with one indent before
-				search: /( and)/gi,
-				replace: "\n\t$&"
-			}
-		];
-
-		for(var i=0,il=steps.length,s;i<il;i++) {
-			s = steps[i];
-			str = str.replace(s.search, s.replace);
-		}
-
-        return str;
-    }
 
 	/**
 	* Show SQL Definition of an view/procedure/function
@@ -1047,7 +1112,8 @@ define(function (require, exports, module) {
 		var info = getCurrentServer(sid);
 		if ( dontGet !== true && (!def || def === undefined || def === 'undefined' || def === '') ) {
 			_nodeDomain.exec('get_definition', sid, info.database, folder, name).done(function(response) {
-				showDefinition(sid, folder, name, response[1][0].Definition, true);
+                var obj = response[1][0];
+				showDefinition(sid, folder, name, (obj.Definition||obj.definition), true);
 			}).fail(function(err) {
 				ResultSets.log('get_definition error', err);
 			});
@@ -1056,19 +1122,8 @@ define(function (require, exports, module) {
 		
 		if ( typeof def === 'string' ) {
             def = formatSQL(def);
-			new_files_count = new_files_count + 1;
-			var doc = DocumentManager.getCurrentDocument();
 			
-			if ( !doc.isUntitled() ) {
-				doc = DocumentManager.createUntitledDocument(new_files_count, ".sql");
-			}
-			doc.setText(def);
-			if ( typeof  ProjectManager.setCurrentFile === 'function' ) {
-				ProjectManager.setCurrentFile(doc.file.fullPath);
-			}
-			else if ( typeof DocumentManager.setCurrentDocument === 'function' ) {
-				DocumentManager.setCurrentDocument(doc);
-			}
+            showSQLOnFile(def);
 		}
 	}
 	
@@ -1132,8 +1187,8 @@ define(function (require, exports, module) {
             name = $li.data("name"),
             sid = $li.parents("li.brackets-sql-connector-browser-server").data('server-id'),
             sinfo = getCurrentServer(sid),
-            $ul = $('<ul class="dropdown-menu dropdownbutton-popup sql-connector-context-menu" tabindex="1">');
-
+            $ul = $('<ul class="dropdown-menu dropdownbutton-popup sql-connector-context-menu" tabindex="1">'),
+            add_refresh = true;
 
             if ( type === "connection" ) {
                 $ul.append(''+
@@ -1141,11 +1196,34 @@ define(function (require, exports, module) {
                         '<a href="#">'+Strings.DISCONNECT+'</a>' +
                     '</li>');
             }
+            else if (type === "view") {
+                $ul.append(''+
+                    '<li data-action="export-view-create">' +
+                        '<a href="#">'+Strings.EXPORT + ' ' + Strings.VIEW+'(' +Strings.CREATE + ')</a>' +
+                    '</li>');
+                $ul.append(''+
+                    '<li data-action="export-view-alter">' +
+                        '<a href="#">'+Strings.EXPORT + ' ' + Strings.VIEW+'(' +Strings.ALTER + ')</a>' +
+                    '</li>');
+                add_refresh = false;
+            }
+            else if (type === "views" || folder === "views") {
+                $ul.append(''+
+                    '<li data-action="export-views-create">' +
+                        '<a href="#">'+Strings.EXPORT + ' ' + Strings.VIEWS+'(' +Strings.CREATE + ')</a>' +
+                    '</li>');
+                $ul.append(''+
+                    '<li data-action="export-views-alter">' +
+                        '<a href="#">'+Strings.EXPORT + ' ' + Strings.VIEWS+'(' +Strings.ALTER + ')</a>' +
+                    '</li>');
+            }
 
+            if ( add_refresh ) {
             $ul.append(''+
-	'<li data-action="refresh" class="refresh">' +
-		'<a href="#">'+Strings.REFRESH+'</a>' +
-	'</li>');
+                '<li data-action="refresh" class="refresh">' +
+                    '<a href="#">'+Strings.REFRESH+'</a>' +
+                '</li>');
+            }
 
             $ul.appendTo("body").css({
                 position: 'absolute',
@@ -1159,6 +1237,18 @@ define(function (require, exports, module) {
                 if (act === "disconnect") {
                     disconnect(sinfo);
                 }
+                else if ( act === "export-view-create") {
+                    exportDefinition('CREATE', 'VIEW', name, $li.data("definition"));
+                }
+                else if ( act === "export-view-alter") {
+                    exportDefinition('CREATE', 'ALTER', name, $li.data("definition"));
+                }
+                else if (act === "export-views-create") {
+                    exportAllViews(sinfo, 'CREATE');
+                }
+                else if (act === "export-views-alter") {
+                    exportAllViews(sinfo, 'ALTER');
+                }
                 $(this).parent().remove();
 
                 if (type === 'table') {
@@ -1171,7 +1261,7 @@ define(function (require, exports, module) {
                     listProcedures($li, sinfo);
                 }
                 else if ( type === "view" || folder === "views") {
-                    listProcedures($li, sinfo);
+                    listViews($li, sinfo);
                 }
                 else if (folder === 'tables') {
                     listTables($li, sinfo);

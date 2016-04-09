@@ -110,6 +110,11 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 	display: none;
 }
 
+.brackets-sql-connector-servers-menu.no-servers li.view-modifications,
+.brackets-sql-connector-servers-menu.no-connections li.view-modifications{
+    display: none;
+}
+
 /* Checkbox has less height than standard text box */
 .brackets-sql-connector-server-config-form .upload-on-save label {
     margin-top: 0px;
@@ -237,6 +242,10 @@ button.btn-server-setup > b {
 
 .brackets-sql-connector-browser-server.mssql > header::before {
 	background-image: url('images/cross.svg');
+}
+
+.brackets-sql-connector-browser-server.postgresql > header::before {
+	background-image: url('images/postgresql.svg');
 }
 .brackets-sql-connector-browser-server.closed > ul { display: none; }
 .brackets-sql-connector-browser-server.closed > header::before { 

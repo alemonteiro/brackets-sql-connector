@@ -1,11 +1,14 @@
 /*jshint node: true*/
 (function () {
 
-	var mysql = require("mysql"),
+	var http = require('http'),
+        mysql = require("mysql"),
 		mssql = require("mssql"),
+        pg = require("pg"),
 		Querys = {
 			mssql : require("./MSSqlQuery.js"),
-			mysql : require("./MySqlQuery.js")	
+			mysql : require("./MySqlQuery.js"),
+            postgresql : require("./PgSqlQuery.js"),
 		},
 		domainName = "BracketsSqlConnectorDomain",
 		connections = {},
@@ -43,7 +46,7 @@
 			});
 			connection.serverId = dbconfig.__id;
 			connection.engine = dbconfig.engine;
-			connection.database = dbconfig.engine;
+			connection.database = dbconfig.database;
 			connection.__query = mysqlQuery;
 			if ( connection.isConnected === undefined ) {
 				connection.isConnected = function() {
@@ -197,6 +200,54 @@
 			
 		},
 		
+        // PG SQL Commands
+        pgQuery = function(connId, sql, callback) {
+
+			var client = _getConn(connId);
+			clog('PG Query', sql);
+			if ( ! client ) {
+                callback('no connection found');
+                return;
+            }
+
+            client.query(sql, function(err, result) {
+            if(err) {
+                console.error('error running query', err);
+                callback(err);
+            }
+            else {
+                callback(null, [result.fields, result.rows]);
+            }
+          });
+        },
+        pgConnect = function(dbconfig, callback) {
+            var conString = "postgres://"+dbconfig.username+":"+dbconfig.password+"@"+dbconfig.host+":"+dbconfig.port+"/"+ dbconfig.database,
+                client = new pg.Client(conString);
+
+            client.connect(function(err) {
+              if(err) {
+                console.error('could not connect to postgres', err);
+                callback(err);
+              return;
+              }
+
+                client.serverId = dbconfig.__id;
+                client.engine = dbconfig.engine;
+                client.database = dbconfig.database;
+                client.connString = conString;
+                client.__query = pgQuery;
+                connections[dbconfig.__id] = client;
+                callback(null, dbconfig.__id);
+            });
+        },
+        pgDisconnect = function(connId, callback) {
+            var cnn = _getConn(connId);
+			if ( cnn ) {
+				cnn.end();
+			}
+			callback(null, 1);
+        },
+
 		// Generic DB Commands
 		cmdListActiveConnections = function() {
 			var arr = [];
@@ -211,6 +262,9 @@
 			if ( dbConfig.engine === "mssql") {
 				mssqlConnect(dbConfig, callback);
 			}
+            else if (dbConfig.engine === "postgresql") {
+                pgConnect(dbConfig, callback);
+            }
 			else {
 				mysqlConnect(dbConfig, callback);
 			}
@@ -220,6 +274,9 @@
 			if ( cnn.engine === "mssql") {
 				mssqlDisconnect(connId, callback);
 			}
+            else if (cnn.engine === "postgresql") {
+                pgDisconnect(connId, callback);
+            }
 			else {
 				mysqlDisconnect(connId, callback);
 			}
