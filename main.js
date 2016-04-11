@@ -635,7 +635,7 @@ define(function (require, exports, module) {
 			}).fail(function(err) {
 				is_connected = false;
 				ResultSets.log(Strings.CONNECTION_ERROR, err);
-				settingsDialog.showDialog(Strings.CONNECTION_ERROR, label, err.code);
+                $("label", $indicator).html(Strings.CONNECTION_ERROR + ": " + (err.message || err));
 			});
 		}
 	}

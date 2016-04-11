@@ -85,6 +85,9 @@ define( function( require, exports, module ) {
 		if ( !cfg ) return false;
         if ( serverId === false || serverId === undefined || cfg.servers[serverId] === undefined) {
 			cfg.selected_id = 0;
+            for(var s in cfg.servers) {
+                cfg.servers[s].__connection_id = 0;
+            }
 			saveSettings(cfg);
 			return false;
 		}

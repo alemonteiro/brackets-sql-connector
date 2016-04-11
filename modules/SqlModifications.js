@@ -78,7 +78,7 @@ define(function (require, exports, module) {
                         Date: m.date,
                         Project: m.project,
                         File: m.file,
-                        Script: m.sql
+                        Sql: m.sql
                     });
                 }
                 response = {

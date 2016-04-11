@@ -1,6 +1,6 @@
 {
   "name": "brackets-sql-connector-domain",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Brackets domain for implementing the extension SQL Connector",
   "license": "MIT",
   "author": {

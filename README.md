@@ -60,7 +60,24 @@ npm install
 
 in the /node folder.
 
+## TODO ##
+
+* Use pg and mssql connection pools
+* Configurable one connection and result sets per editor
+* Better organize / divide menus (probably best submenus)
+* Interface to config default extension settings
+
 ## Release Notes ##
+
+### v 0.5.1 ###
+
+* Started using connection pool for mysql 
+
+Bug Fixes
+
+* Fixed showing Settings Dialog when connection error occured.
+* Fixed auto reconnecting even if there was not active connection last time.
+* Fixed show full modification script not showing sql (dates and paths are ugly yet tho)
 
 ### v 0.5.0 ###
 
@@ -145,11 +162,3 @@ Bug Fixes
 * Probably some bugs =x 
 * Should disconnect from server before closing brackets
 
-### TODO ###
-* Use node mysql connection pools
-* Configurable one connection and result sets per editor
-
-### TODO - Code Stuff ###
-
-* Remove unused css rules / optmize css selectors and names
-* I don't know... there's alway something to make it better
