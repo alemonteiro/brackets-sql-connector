@@ -447,6 +447,8 @@ button.btn-server-setup > b {
 	background: #090909;
 	padding: 4px 5px;
 	position: relative;
+    max-height: 75%;
+    min-height: 50px;
 }
 .brackets-sql-connector-result-pane > a.close {
 	position: absolute;
