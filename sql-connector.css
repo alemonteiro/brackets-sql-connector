@@ -5,7 +5,7 @@
 	top: 0;
 	z-index: 999;
 	width: 250px;
-	background: #2c2c2c;
+	/*background: #2c2c2c;*/
 	min-height: 450px;
 	padding: 6px;
 	display: none;
@@ -16,7 +16,7 @@
 
 
 #brackets-sql-connector-browser .status-stab{
-    color: #555;
+
     cursor: pointer;
 }
 .brackets-sql-connector-browser table {
@@ -88,7 +88,7 @@ a#brackets-sql-connector-icon.active {
 ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-height: 100px; height: auto;}
 .brackets-sql-connector-servers-menu li { padding: 3px 0; }
 .brackets-sql-connector-servers-menu li:not(.connect-to):not(.separator):not(.set-current-connection):not(.disconnect-from):hover {
-	background: #1a1a1a;
+	background: rgba(0, 0, 0, 0.25);
 }
 .brackets-sql-connector-servers-menu h2 {font-size: 14px; padding: 2px; font-weight: bold;margin: 0; line-height: normal;}
 .brackets-sql-connector-servers-menu .separator{
@@ -141,14 +141,14 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 	padding: 0.2em 0.2em;
 }
 #brackets-sql-connector-server-list li.selected {
-	color: #FFF;
+	/*color: #FFF;*/
 	font-weight: bolder;
 	background: #2c2c2c;
 }
 #brackets-sql-connector-server-list li:hover {
-	background: #3c3c3c;
+	/*background: #3c3c3c;*/
 	cursor: pointer;
-	color: #000;
+	/*color: #000;*/
 	font-weight: bold;
 }
 #brackets-sql-connector-server-list li > a.close { display: none;  }
@@ -157,7 +157,7 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 	right: 0px;
 	top: 0px;
 	display: block;
-	color: #FFF;
+	/*color: #FFF;*/
 	font-size: 1em;
 	cursor: pointer;
 	padding: 0.2em 0.5em;
@@ -165,11 +165,11 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 }
 #brackets-sql-connector-server-list li:hover > a.close:hover {
 	background: #852222;
-	color: #FFF;
+	/*color: #FFF;*/
 }
 button.btn-server-setup > b {
 	font-weight: bold;
-	color: #FFF;
+	/*color: #FFF;*/
 }
 .brackets-sql-connector-server-list-panel {
 	float: left;
@@ -195,7 +195,7 @@ button.btn-server-setup > b {
 .conn-error {
 	color: #852222;
 	display: block;
-	background: #090909;
+	/*background: #090909;*/
 	border-radius: 4px;
 	font-size: 1.3em;
 	padding: 4px 6px;
@@ -296,7 +296,7 @@ button.btn-server-setup > b {
 
 .brackets-sql-connector-list-tables span.data-type {
 	margin-left: 5px;
-	color: #AAA;
+	/*color: #AAA;*/
 	font-weight: 200;
 }
 
@@ -351,7 +351,7 @@ button.btn-server-setup > b {
 .brackets-sql-connector-status-indicator button.btn-icon {
 	background: none;
 	border: none;
-	color: #FFF;
+	/*color: #FFF;*/
 	background-repeat: no-repeat;
 	background-size: contain;
 	background-position: center center;
@@ -363,9 +363,7 @@ button.btn-server-setup > b {
 	cursor: pointer;
 }
 .brackets-sql-connector-browser button.btn-icon path {
-	fill: #FFF;
-	stroke: #0F0;
-	color: #FFF;
+
 }
 .brackets-sql-connector-browser button.btn-icon.btn-new-query {
 	background-image: url('images/edit_query_white.svg');
@@ -409,7 +407,7 @@ button.btn-server-setup > b {
 	content: " ";
 	background: none;
 	border: none;
-	color: #FFF;
+	/*color: #FFF;*/
 	background-repeat: no-repeat;
 	background-size: contain;
 	background-position: center center;
@@ -444,7 +442,7 @@ button.btn-server-setup > b {
 }
 
 .brackets-sql-connector-result-pane {
-	background: #090909;
+	/*background: #090909;*/
 	padding: 4px 5px;
 	position: relative;
     max-height: 75%;
@@ -468,7 +466,7 @@ button.btn-server-setup > b {
 	padding: 2px;
 	border-collapse: collapse;
 	border: 1px solid #AAA;
-	background: #2c2c2c;
+	/*background: #2c2c2c;*/
 	
   	-webkit-user-select: text; 
   	user-select: text;         
@@ -482,10 +480,10 @@ button.btn-server-setup > b {
   	user-select: text;         
 }
 .brackets-sql-connector-result tbody tr {
-	background: #323232;	
+	/*background: #323232;	*/
 }
 .brackets-sql-connector-result tbody tr:nth-child(odd) {
-	background: #424242;	
+	/*background: #424242;	*/
 }
 
 .brackets-sql-connector-results-sets ul {
@@ -498,13 +496,14 @@ button.btn-server-setup > b {
 	
 }
 .brackets-sql-connector-results-sets ul li a {
-	padding: 0.1em;
-	color: #666;
+	padding: 0.1em 0.3em;
+	/*color: #666;*/
 	display: inline-block;
 }
 
 .brackets-sql-connector-results-sets ul li.active a {
-	color: #FFF;
+	/*color: #FFF;*/
+	background: rgba(0, 0, 0, 0.4);
 }
 
 .brackets-sql-connector-results-sets > div > div { display: none; }
@@ -523,7 +522,7 @@ button.btn-server-setup > b {
 
 #brackets-sql-connector-log-pane ul{
 	list-style-type: none;
-	background: #1A1A1A;
+	/*background: #1A1A1A;*/
 	margin: 0 2px;
 }
 #brackets-sql-connector-log-pane ul li {
@@ -549,14 +548,14 @@ button.btn-server-setup > b {
   	user-select: text;       
 }
 #brackets-sql-connector-log-pane pre {
-	background: #2c2c2c;
+	/*background: #2c2c2c;*/
 	margin-left: 3px;
 	display: inline-block;
   	-webkit-user-select: text; 
   	user-select: text;       
 }
 .brackets-sql-connector-dialog pre {
-	background: #090909;
+	/*background: #090909;*/
 	margin-left: 3px;
   	-webkit-user-select: text; 
   	user-select: text;       

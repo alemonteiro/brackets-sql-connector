@@ -3,7 +3,7 @@
     "title": "SQL Connector & Browser (MySQL, MS SQL Server & PostgreSQL)",
     "description": "Browse Databases and execute commands directly from the editor. Opens views/procedures/functions as documents. Supports MySQL, MS SQL Server and PostgreSQL.",
 	"keywords":["sql connector", "sql", "mssql", "database", "mysql", "database viewer", "execute query", "sql browser", "execute sql", "postgresql", "pgsql"],
-    "version": "0.5.2",
+    "version": "0.5.3",
     "license": "MIT",
   	"homepage": "https://github.com/alemonteiro/brackets-sql-connector.git",
 	"author": {
