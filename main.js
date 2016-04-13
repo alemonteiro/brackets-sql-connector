@@ -1400,14 +1400,18 @@ define(function (require, exports, module) {
 		installer.on("installComplete", function (event, code, out) {
 			if (code === 0) {
 				ResultSets.log('install', 'complete');
-				// Get Node module domain
-				_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
-				// Check any left over connections
-				checkActiveConnections();
+				applicationReady();
 			} else {
 				ResultSets.log(Strings.ERROR, out);
 			}
 		});
+	}
+
+	function applicationReady() {
+		// Get Node module domain
+		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
+		// Check any left over connections
+		checkActiveConnections();
 	}
 
 	// Register panel and setup event listeners.
@@ -1472,10 +1476,7 @@ define(function (require, exports, module) {
 			if (!error && !exists) {
 				installDependencies();
 			} else {
-				// Get Node module domain
-				_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
-				// Check any left over connections
-				checkActiveConnections();
+				applicationReady();
 			}
 		});
 	});
