@@ -69,6 +69,18 @@ in the /node folder.
 
 ## Release Notes ##
 
+### v 0.5.3 ###
+
+Bug Fixes
+
+* Assumed default styles from brackets (all colors and background-colors from the extension css was removed and added the default 'panel' and 'dark' classes)
+
+### v 0.5.2 ###
+
+Bug Fixes
+
+* Added max-height to result panel
+
 ### v 0.5.1 ###
 
 * Started using connection pool for mysql 
