@@ -70,7 +70,7 @@ define(function (require, exports, module) {
 		
 		// Get Node module domain
 		_domainPath = ExtensionUtils.getModulePath(module, "node/SQLConnectorDomain"),
-		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath),
+		_nodeDomain,
 
 		// Current Status vars
 		_current_server_id,
@@ -1393,6 +1393,23 @@ define(function (require, exports, module) {
         });
     }
 
+	function installDependencies() {
+		var installer = new NodeDomain("installDependencies", ExtensionUtils.getModulePath(module, "node/installer"));
+		ResultSets.log('install', 'started...');
+		installer.exec("install");
+		installer.on("installComplete", function (event, code, out) {
+			if (code === 0) {
+				ResultSets.log('install', 'complete');
+				// Get Node module domain
+				_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
+				// Check any left over connections
+				checkActiveConnections();
+			} else {
+				ResultSets.log(Strings.ERROR, out);
+			}
+		});
+	}
+
 	// Register panel and setup event listeners.
 	AppInit.appReady(function () {
 
@@ -1437,8 +1454,6 @@ define(function (require, exports, module) {
 		// Setup commands.
 		registerCommands();
 
-        // Check any left over connections
-		checkActiveConnections();
 
         registerUIListerner();
 
@@ -1450,5 +1465,18 @@ define(function (require, exports, module) {
 		if (preferences.get('browserPanelEnabled')) {
 			enableBrowserPanel(true);
 		}
+
+		// Install dependencies
+		var nodeModules = FileSystem.getDirectoryForPath(ExtensionUtils.getModulePath(module, "node/node_modules"));
+		nodeModules.exists(function (error, exists) {
+			if (!error && !exists) {
+				installDependencies();
+			} else {
+				// Get Node module domain
+				_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
+				// Check any left over connections
+				checkActiveConnections();
+			}
+		});
 	});
 });
