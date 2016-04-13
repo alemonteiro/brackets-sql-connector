@@ -73,6 +73,7 @@ define(function (require, exports, module) {
 		_nodeDomain,
 
 		// Current Status vars
+		is_installed = false,
 		_current_server_id,
 		new_files_count = 0;
 
@@ -285,25 +286,27 @@ define(function (require, exports, module) {
 	 * Initialize extension.
 	 */
 	function enableBrowserPanel(enabled) {
-		if (enabled) {
-			$browserPanel.show();
-						
-			// Set active class on icon.
-			$sqlConnectorIcon.addClass('active');
-			
-			resizeBrowserPanel();
-		} else {
-			// Remove active class from icon.
-			$sqlConnectorIcon.removeClass('active');
-			$browserPanel.hide();
-		}
-		is_browser_pane_enabled = enabled;
-		// Save enabled state.
-		preferences.set('browserPanelEnabled', enabled);
-		preferences.save();
+		if (is_installed) {
+			if (enabled) {
+				$browserPanel.show();
 
-		// Mark menu item as enabled/disabled.
-		CommandManager.get(Cmds.TOGGLE_BROWSER_PANEL).setChecked(enabled);
+				// Set active class on icon.
+				$sqlConnectorIcon.addClass('active');
+
+				resizeBrowserPanel();
+			} else {
+				// Remove active class from icon.
+				$sqlConnectorIcon.removeClass('active');
+				$browserPanel.hide();
+			}
+			is_browser_pane_enabled = enabled;
+			// Save enabled state.
+			preferences.set('browserPanelEnabled', enabled);
+			preferences.save();
+
+			// Mark menu item as enabled/disabled.
+			CommandManager.get(Cmds.TOGGLE_BROWSER_PANEL).setChecked(enabled);
+		}
 	}
 	
 	/** 
@@ -1393,21 +1396,26 @@ define(function (require, exports, module) {
         });
     }
 
+	// Installing dependencies
 	function installDependencies() {
 		var installer = new NodeDomain("installDependencies", ExtensionUtils.getModulePath(module, "node/installer"));
-		ResultSets.log('install', 'started...');
+		$('label', $indicator).html(Strings.INSTALLING);
+		$sqlConnectorIcon.addClass('installing');
 		installer.exec("install");
 		installer.on("installComplete", function (event, code, out) {
+			$sqlConnectorIcon.removeClass('installing');
 			if (code === 0) {
-				ResultSets.log('install', 'complete');
+				$('label', $indicator).html(Strings.NOT_CONNECTED);
 				applicationReady();
 			} else {
-				ResultSets.log(Strings.ERROR, out);
+				$('label', $indicator).addClass('error').html(Strings.ERROR + ": " + out);
 			}
 		});
 	}
 
+	// Redy app and unlock commands
 	function applicationReady() {
+		is_installed = true;
 		// Get Node module domain
 		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
 		// Check any left over connections
@@ -1436,13 +1444,17 @@ define(function (require, exports, module) {
 		}));
 		StatusBar.addIndicator('alemonteiro.bracketsSqlConnector.connIndicator', $indicator, true, 'brackets-sql-connector-status-indicator');
 		$indicator.on('click', 'button', function(evt){
-			var action = $(this).data("action");
-			if ( action === "execute" ) {
-				executeCurrent();
+			if (is_installed) {
+				var action = $(this).data("action");
+				if (action === "execute") {
+					executeCurrent();
+				}
 			}
 		})
 		.on('click', 'label', function(evt) {
-			showServerMenu($(this));
+			if (is_installed) {
+				showServerMenu($(this));
+			}
 		});
 
 		$browserPanel = $('#brackets-sql-connector-browser');
