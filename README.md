@@ -15,6 +15,7 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 * Status Bar Menu For Connect/Disconnect and change Active Editor Connection
 * Store server settings in the brackets system preference file, not the root folder of your projects, so no worry about uploading your credentials to your git repo.
 * Connections are not per project. They are even maintained connected on project switch.
+* Auto Install of dependecies
 
 ## Getting Started ##
 
@@ -25,7 +26,13 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 5. Click on the status bar label (Normally 'Not Connected') to open the Menu 
 8. Shortcuts: 
     * (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
-   
+
+## Auto Install ##
+
+Brackets registry editor sometimes doesn't handle large uploads and I wasn't able to update the version of the extension.
+
+> Did the automatic installation of dependencies when you first start. At the time of installation commands are not available, the status bar shows "Installing...", the plugin icon is highlighted in orange.
+
 ## Executing from editor ##
 
 * On the bottom panel should be a green connection icon with yout server name in front of it.
@@ -48,9 +55,13 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 
 ### Contributions And Attributions ###
 
-* All those fabulous icons are given by freekpik: http://freepik.com
+* Those fabulous icons are given by freekpik: http://freepik.com
 * MySQL Server Connections are made possible by https://www.npmjs.com/package/mysql
 * MS SQL Server Connections are made possible by https://www.npmjs.com/package/mssql
+* PG SQL Server Connections are made possible by https://www.npmjs.com/package/pg
+
+* Auto Install by [@iNovozhilov](https://github.com/iNovozhilov)
+
 
 ## Notes for developers ##
 
@@ -68,6 +79,10 @@ in the /node folder.
 * Interface to config default extension settings
 
 ## Release Notes ##
+
+### v 0.5.4 ###
+
+Added 
 
 ### v 0.5.3 ###
 

@@ -1391,23 +1391,6 @@ define(function (require, exports, module) {
         });
     }
 
-	// Installing dependencies
-	function installDependencies() {
-		var installer = new NodeDomain("installDependencies", ExtensionUtils.getModulePath(module, "node/installer"));
-		$('label', $indicator).html(Strings.INSTALLING);
-		$sqlConnectorIcon.addClass('installing');
-		installer.exec("install");
-		installer.on("installComplete", function (event, code, out) {
-			$sqlConnectorIcon.removeClass('installing');
-			if (code === 0) {
-				$('label', $indicator).html(Strings.NOT_CONNECTED);
-				applicationReady();
-			} else {
-				$('label', $indicator).addClass('error').html(Strings.ERROR + ": " + out);
-			}
-		});
-	}
-
 	// Redy app and unlock commands
 	function applicationReady() {
 		// Get Node module domain
@@ -1437,6 +1420,23 @@ define(function (require, exports, module) {
 		if (preferences.get('browserPanelEnabled')) {
 			enableBrowserPanel(true);
 		}
+	}
+
+	// Installing dependencies
+	function installDependencies() {
+		var installer = new NodeDomain("BracketsSqlConnectorDomainInstaller", ExtensionUtils.getModulePath(module, "node/installer"));
+		$('label', $indicator).html(Strings.INSTALLING);
+		$sqlConnectorIcon.addClass('installing');
+		installer.exec("install");
+		installer.on("installComplete", function (event, code, out) {
+			$sqlConnectorIcon.removeClass('installing');
+			if (code === 0) {
+				$('label', $indicator).html(Strings.NOT_CONNECTED);
+				applicationReady();
+			} else {
+				$('label', $indicator).addClass('error').html(Strings.ERROR + ": " + out);
+			}
+		});
 	}
 
 	// Register panel and setup event listeners.
@@ -1478,8 +1478,8 @@ define(function (require, exports, module) {
 		Resizer.makeResizable($queryPanel, "vert", "top");
 		Resizer.makeResizable($browserPanel, "horz", "left");
 
-		// Install dependencies
-		var nodeModules = FileSystem.getDirectoryForPath(ExtensionUtils.getModulePath(module, "node/node_modules"));
+		// Install dependencies - check for pg because it was the last added dependency (somebody can have only the mysql or mssms module)
+		var nodeModules = FileSystem.getDirectoryForPath(ExtensionUtils.getModulePath(module, "node/node_modules/pg"));
 		nodeModules.exists(function (error, exists) {
 			if (!error && !exists) {
 				installDependencies();

@@ -3,11 +3,9 @@
 (function () {
 	'use strict';
 
-	var DOMAIN_NAME = "installDependencies";
-
-	var exec = require("child_process").exec;
-
-	var _domainManager, child;
+	var DOMAIN_NAME = "BracketsSqlConnectorDomainInstaller",
+		exec = require("child_process").exec,
+		_domainManager, child;
 
 	function install() {
 		var out = '';
