@@ -70,7 +70,7 @@ define(function (require, exports, module) {
 		
 		// Get Node module domain
 		_domainPath = ExtensionUtils.getModulePath(module, "node/SQLConnectorDomain"),
-		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath),
+		_nodeDomain,
 
 		// Current Status vars
 		_current_server_id,
@@ -287,10 +287,10 @@ define(function (require, exports, module) {
 	function enableBrowserPanel(enabled) {
 		if (enabled) {
 			$browserPanel.show();
-						
+
 			// Set active class on icon.
 			$sqlConnectorIcon.addClass('active');
-			
+
 			resizeBrowserPanel();
 		} else {
 			// Remove active class from icon.
@@ -1163,8 +1163,6 @@ define(function (require, exports, module) {
         CommandManager.register(Strings.CLEAR_LOG, Cmds.CLEAR_LOG, clearLog);
         CommandManager.register(Strings.REFRESH, Cmds.REFRESH, menuRefresh);
 
-		menu.addMenuItem(Cmds.EXECUTE_CURRENT, 'Alt-Enter');
-
         ctxMenu = Menus.registerContextMenu('alemonteiro.bracketsSqlConnector.browserPanelContextMenu');
         ctxMenu.addMenuItem(Cmds.REFRESH);
 	}
@@ -1288,7 +1286,7 @@ define(function (require, exports, module) {
 		// Add listener for toolbar icon..
 		$sqlConnectorIcon.click(function () {
 			CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
-		}).appendTo('#main-toolbar .buttons');
+		});
 
         // Listener for removing modifications
         $("#brackets-sql-connector-modifications-pane").on('click', 'tbody tr td a.close', function(evt) {
@@ -1393,10 +1391,59 @@ define(function (require, exports, module) {
         });
     }
 
+	// Installing dependencies
+	function installDependencies() {
+		var installer = new NodeDomain("installDependencies", ExtensionUtils.getModulePath(module, "node/installer"));
+		$('label', $indicator).html(Strings.INSTALLING);
+		$sqlConnectorIcon.addClass('installing');
+		installer.exec("install");
+		installer.on("installComplete", function (event, code, out) {
+			$sqlConnectorIcon.removeClass('installing');
+			if (code === 0) {
+				$('label', $indicator).html(Strings.NOT_CONNECTED);
+				applicationReady();
+			} else {
+				$('label', $indicator).addClass('error').html(Strings.ERROR + ": " + out);
+			}
+		});
+	}
+
+	// Redy app and unlock commands
+	function applicationReady() {
+		// Get Node module domain
+		_nodeDomain = new NodeDomain("BracketsSqlConnectorDomain", _domainPath);
+
+		// Check any left over connections
+		checkActiveConnections();
+
+		// Add "EXECUTE_CURRENT" to main menu
+		menu.addMenuItem(Cmds.EXECUTE_CURRENT, 'Alt-Enter');
+
+		// Setup $indicator events
+		$indicator.on('click', 'button', function (evt) {
+				var action = $(this).data("action");
+				if (action === "execute") {
+					executeCurrent();
+				}
+			})
+			.on('click', 'label', function (evt) {
+				showServerMenu($(this));
+			});
+
+		// Setup UI events
+		registerUIListerner();
+
+		// Enable extension if loaded last time.
+		if (preferences.get('browserPanelEnabled')) {
+			enableBrowserPanel(true);
+		}
+	}
+
 	// Register panel and setup event listeners.
 	AppInit.appReady(function () {
 
 	 	$sqlConnectorIcon = $('<a href="#" title="' + Strings.EXTENSION_NAME + '" id="brackets-sql-connector-icon"></a>');
+		$sqlConnectorIcon.appendTo('#main-toolbar .buttons');
 
 		// Browser Panel
 		var browserPanel = Mustache.render(browserPanelTemplate, {
@@ -1414,15 +1461,6 @@ define(function (require, exports, module) {
 			Strings: Strings
 		}));
 		StatusBar.addIndicator('alemonteiro.bracketsSqlConnector.connIndicator', $indicator, true, 'brackets-sql-connector-status-indicator');
-		$indicator.on('click', 'button', function(evt){
-			var action = $(this).data("action");
-			if ( action === "execute" ) {
-				executeCurrent();
-			}
-		})
-		.on('click', 'label', function(evt) {
-			showServerMenu($(this));
-		});
 
 		$browserPanel = $('#brackets-sql-connector-browser');
 		// Close panel when close button is clicked.
@@ -1437,18 +1475,17 @@ define(function (require, exports, module) {
 		// Setup commands.
 		registerCommands();
 
-        // Check any left over connections
-		checkActiveConnections();
-
-        registerUIListerner();
-
 		Resizer.makeResizable($queryPanel, "vert", "top");
 		Resizer.makeResizable($browserPanel, "horz", "left");
 
-
-		// Enable extension if loaded last time.
-		if (preferences.get('browserPanelEnabled')) {
-			enableBrowserPanel(true);
-		}
+		// Install dependencies
+		var nodeModules = FileSystem.getDirectoryForPath(ExtensionUtils.getModulePath(module, "node/node_modules"));
+		nodeModules.exists(function (error, exists) {
+			if (!error && !exists) {
+				installDependencies();
+			} else {
+				applicationReady();
+			}
+		});
 	});
 });

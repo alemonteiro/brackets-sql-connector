@@ -60,6 +60,10 @@ a#brackets-sql-connector-icon.active {
 	background-position-y: -24px;
 }
 
+a#brackets-sql-connector-icon.installing {
+	background-position-x: -24px;
+}
+
 /*--- PROJECT WIDE SEARCH ---*/
 .brackets-sql-connector-server-config-form .field-container {
     margin-bottom: 7px;

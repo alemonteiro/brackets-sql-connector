@@ -3,6 +3,7 @@
 define( {
 	// EXTENSION.
 	EXTENSION_NAME: "SQL Connector",
+	INSTALLING: "Installing...",
     	
 	// EXECUTE OPTIONS
 	EXECUTE: "Execute",
