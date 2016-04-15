@@ -82,7 +82,11 @@ in the /node folder.
 
 ### v 0.5.4 ###
 
-Added 
+* Added auto install of dependencies
+
+Bug Fixes
+
+* Removed custom colors and let the style be made by brackets.
 
 ### v 0.5.3 ###
 
