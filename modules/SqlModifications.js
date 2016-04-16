@@ -29,12 +29,21 @@ define(function (require, exports, module) {
             });
         },
 
-        loadModifications = function (mods) {
+		updateStatus = function(svr) {
+			var count = $("#brackets-sql-connector-modifications-pane tbody tr").length;
+			$("#brackets-sql-connector-modifications-pane > .brackets-sql-connector-db-name").html(
+				(count === 0 ? Strings.NO_MODIFICATIONS : (count + " " + Strings.MODIFICATIONS)) + " " +
+				Strings.AT + " " + svr.name
+			);
+		},
+
+        loadModifications = function (svr, mods) {
             var html, i = 0,
                 il = mods.length,
                 mod;
             for (; i < il; i++) html = getModificationTrHtml(mods[i]) + html;
             $("#brackets-sql-connector-modifications-pane tbody").html(html);
+			updateStatus(svr);
         },
 
         addModificationTr = function (mod) {
@@ -63,6 +72,7 @@ define(function (require, exports, module) {
                 serverList.servers[id] = svr;
                 dataStorage.saveSettings(serverList);
                 addModificationTr(mod);
+				updateStatus(svr);
             }
         },
 

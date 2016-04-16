@@ -37,6 +37,7 @@ define(function (require, exports, module) {
         Modifications = require('modules/SqlModifications'),
 		dataStorage = require('modules/DataStorageManager'),
 		Cmds = require('modules/SqlConnectorCommands'),
+		Indicator = require('modules/Indicator'),
 		
 		// Preferences.
 		preferences = PreferencesManager.getExtensionPrefs('alemonteiro.bracketsSqlConnector'),
@@ -171,14 +172,11 @@ define(function (require, exports, module) {
                 _current_server_id = serverId;
                 is_connected = true;
                 $browserPanel.addClass('connected');
-                $indicator
-                    .addClass('connected')
-                    .children('label')
-                    .data("sid", serverId)
-                    .html(getServerLabel(svr));
+
+				Indicator.setServer(svr);
 
                 if ( svr.saveModifications ) {
-                    Modifications.load(svr.modifications);
+                    Modifications.load(svr, svr.modifications);
                 }
                 if ( ! $sqlConnectorIcon.hasClass("connected")) {
                     $sqlConnectorIcon.addClass("connected");
@@ -408,7 +406,7 @@ define(function (require, exports, module) {
      * Clear log tab
      */
     function clearLog() {
-        $("#brackets-sql-connector-log-pane ul").empty();
+        ResultSets.clearLog();
     }
 
     /**
@@ -563,9 +561,7 @@ define(function (require, exports, module) {
 				if ( ! hasActiveConnection() ) {
 					setSelectedServer(false);	
 					$browserPanel.removeClass('connected');
-					$indicator.removeClass('connected').children('label')
-						.html(Strings.DISCONNECTED)
-						.data("sid", false);
+					Indicator.disconnected();
 				}
 				else if ( searchForNext !== false ) {
 					selectNextConnectedServer();
@@ -603,8 +599,7 @@ define(function (require, exports, module) {
             dataStorage.saveSettings(info);
         }
 		$browserPanel.removeClass("connected");
-		$indicator.removeClass('connected');
-		$("label", $indicator).html(Strings.DISCONNECTED).data("sid", false);
+		Indicator.disconnected();
 	}
 	
 	/**
@@ -635,7 +630,7 @@ define(function (require, exports, module) {
 			}).fail(function(err) {
 				is_connected = false;
 				ResultSets.log(Strings.CONNECTION_ERROR, err);
-                $("label", $indicator).html(Strings.CONNECTION_ERROR + ": " + (err.message || err));
+				Indicator.error(serverInfo, Strings.CONNECTION_ERROR, err);
 			});
 		}
 	}
@@ -669,12 +664,7 @@ define(function (require, exports, module) {
 	* Check if the new current file is an SQL
 	*/
 	function fileChanged(file) {
-		if ( canExecFile(file) ) {
-			if ( ! $indicator.addClass('has-sql') ) $indicator.addClass('has-sql');
-		}
-		else {
-			$indicator.removeClass('has-sql');
-		}
+		Indicator.toggleExecute(canExecFile(file));
 	}
 	
 	/**
@@ -693,7 +683,7 @@ define(function (require, exports, module) {
 
 		ResultSets.log(Strings.EXECUTING, sql);
 
-        $('label', $indicator).html(Strings.EXECUTING);
+		Indicator.executing();
 
 		_nodeDomain
 			.exec('query', server.__id, sql)
@@ -712,7 +702,7 @@ define(function (require, exports, module) {
                             ( response.insertId > 0 ? Strings.QUERY_INSERTED_ID + ": " + response.insertId : ''));
 
                     ResultSets.log(Strings.FINISHED, msg);
-                    $('label', $indicator).removeClass('executing').html(msg);
+					Indicator.executed(msg);
                 }
                 else {
                     var str;
@@ -720,7 +710,8 @@ define(function (require, exports, module) {
                     else str = "("+response[1].length+" rows)";
 
                     ResultSets.log(Strings.FINISHED, str);
-                    $('label', $indicator).removeClass('executing').html(Strings.FINISHED + ": " + str);
+					str = Strings.FINISHED + ": " + str;
+					Indicator.executed(str);
 
                     if ( typeof callback === 'function' ) {
                         if ( $.isArray(response[0][0]) ) {
@@ -734,18 +725,19 @@ define(function (require, exports, module) {
                     }
                 }
             }
-            catch(err) {
-                $('label', $indicator).addClass('error').html(Strings.PARSE_ERROR + ": " + err.message);
-			     ResultSets.log(Strings.PARSE_ERROR, err);
+            catch(erro) {
+                Indicator.error(server, Strings.PARSE_ERROR, erro);
+				ResultSets.log(Strings.PARSE_ERROR, erro);
             }
 		}).fail(function(err){
 			ResultSets.log(Strings.QUERY_ERROR, err);
-			$('label', $indicator).html(Strings.QUERY_ERROR + ': ' + (
+			var msg = (
 				typeof err === 'string' ? err : 
 				(typeof err.code === 'string' ? err.code :
 					(typeof err.message === 'string' ? err.message : JSON.stringify(err))
 				)
-			));
+			);
+			Indicator.error(server, Strings.QUERY_ERROR, msg);
             if ( typeof callback === 'function' ) {
 			     callback(err);
             }
@@ -775,20 +767,20 @@ define(function (require, exports, module) {
 	*/
 	function executeFile(file) {
 		file = file || MainViewManager.getCurrentlyViewedFile();
-		if ( canExecFile(file) && ! $indicator.hasClass("executing")) {
-			$indicator.addClass("executing");
-			$('label', $indicator).html(Strings.EXECUTING);
-				file.read(function(err, data, status) {
-					var sid = $("label", $indicator).data("sid");
-					executeSQLCommand(getCurrentServer(sid), data, function(err, fields, rows) {
-						ResultSets.add(fields, rows, data, err);
-						$indicator.removeClass("executing");
-						$('label', $indicator).html(Strings.FINISHED + '('+rows.length+' rows)');
-					}, false, file.fullPath).fail(function(err){
-						$(this).prev('label').html(err);
-						$('label', $indicator).html(Strings.ERROR);
-					});
+		if ( canExecFile(file) && ! Indicator.isExecuting()) {
+			Indicator.executing();
+			file.read(function(err, data, status) {
+				var sid = Indicator.getCurrentId(),
+					svr = getCurrentServer(sid);
+
+				executeSQLCommand(svr, data, function(err, fields, rows) {
+					ResultSets.add(fields, rows, data, err, svr);
+					Indicator.executed(Strings.FINISHED + '('+rows.length + ' ' + Strings.ROWS + ')');
+				}, false, file.fullPath).fail(function(err){
+					ResultSets.log(Strings.QUERY_ERROR, err);
+					Indicator.error(svr, Strings.QUERY_ERROR, err);
 				});
+			});
 		}
 	}
 	
@@ -831,8 +823,9 @@ define(function (require, exports, module) {
 				executeFile();
 			}
 			else {
-				executeSQLCommand(getCurrentServer($("label", $indicator).data("sid")), text, function(err, fields, rows) {
-					ResultSets.add(fields, rows, text, err);
+				var svr = getCurrentServer(Indicator.getCurrentId());
+				executeSQLCommand(svr, text, function(err, fields, rows) {
+					ResultSets.add(fields, rows, text, err, svr);
 				}, false, file);
 			}
 		}
@@ -1409,8 +1402,8 @@ define(function (require, exports, module) {
 					executeCurrent();
 				}
 			})
-			.on('click', 'label', function (evt) {
-				showServerMenu($(this));
+			.on('click', function (evt) {
+				showServerMenu($(this), undefined, evt);
 			});
 
 		// Setup UI events
@@ -1425,16 +1418,16 @@ define(function (require, exports, module) {
 	// Installing dependencies
 	function installDependencies() {
 		var installer = new NodeDomain("BracketsSqlConnectorDomainInstaller", ExtensionUtils.getModulePath(module, "node/installer"));
-		$('label', $indicator).html(Strings.INSTALLING);
+		Indicator.setText(Strings.INSTALLING);
 		$sqlConnectorIcon.addClass('installing');
 		installer.exec("install");
 		installer.on("installComplete", function (event, code, out) {
 			$sqlConnectorIcon.removeClass('installing');
 			if (code === 0) {
-				$('label', $indicator).html(Strings.NOT_CONNECTED);
+				Indicator.setText(Strings.NOT_CONNECTED);
 				applicationReady();
 			} else {
-				$('label', $indicator).addClass('error').html(Strings.ERROR + ": " + out);
+				Indicator.setText(Strings.ERROR + ": " + out);
 			}
 		});
 	}
@@ -1462,6 +1455,8 @@ define(function (require, exports, module) {
 		}));
 		StatusBar.addIndicator('alemonteiro.bracketsSqlConnector.connIndicator', $indicator, true, 'brackets-sql-connector-status-indicator');
 
+		Indicator.init($indicator);
+
 		$browserPanel = $('#brackets-sql-connector-browser');
 		// Close panel when close button is clicked.
 		$browserPanel
@@ -1475,7 +1470,7 @@ define(function (require, exports, module) {
 		// Setup commands.
 		registerCommands();
 
-		Resizer.makeResizable($queryPanel, "vert", "top");
+		//Resizer.makeResizable($queryPanel, "vert", "top");
 		Resizer.makeResizable($browserPanel, "horz", "left");
 
 		// Install dependencies - check for pg because it was the last added dependency (somebody can have only the mysql or mssms module)

@@ -11,13 +11,21 @@
 		</ul>
 		<div class="brackets-sql-connector-result-tab-body">
 			<div id="brackets-sql-connector-log-pane" class="brackets-sql-connector-result active">
-				<ul></ul>
+				<table class="table-striped">
+				    <tbody>
+
+				    </tbody>
+				    <tfoot>
+
+				    </tfoot>
+				</table>
 			</div>
 			<div id="brackets-sql-connector-modifications-pane" class="brackets-sql-connector-result">
-				<table>
+				<div class="brackets-sql-connector-db-name"></div>
+				<table class="table-striped">
 				    <thead>
 				        <tr>
-				            <th>{{Strings.DATE}}</th>
+				            <th width="75px">{{Strings.DATE}}</th>
 				            <th>{{Strings.PROJECT}}</th>
 				            <th>{{Strings.FILE_ORIGIN}}</th>
 				            <th>{{Strings.SQL_COMMAND}}</th>

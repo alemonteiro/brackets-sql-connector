@@ -21,32 +21,37 @@ define( function( require, exports, module ) {
 		ids = 0,
 		prefix = "brackets-sql-connector-result-set-",
 				
-		add_achor = function(id) {
+		add_anchor = function(id) {
 			var li = '<li class="active">' +
 							'<a href="#" class="tab-anchor" data-target="#'+prefix + id +'">' + Strings.RESULT_SET + ' '  + id +'</a>' +
 							'<a href="#" class="close close-result-set">&times;</a>' +
 					'</li>';
 
 
-			$("#brackets-sql-connector-log-pane-anchor").removeClass("active").siblings().removeClass('active');
-			$("#brackets-sql-connector-log-pane-anchor").after($(li).addClass('active'));
+			$("#brackets-sql-connector-modifications-pane-anchor").removeClass("active").siblings().removeClass('active');
+			$("#brackets-sql-connector-modifications-pane-anchor").after($(li).addClass('active'));
 		},
 
 		add_log = function(title, extra, query) {
 			var dt = new Date(),
 				str = typeof extra === 'string' ? extra :
 						(typeof extra=== 'object' ? JSON.stringify(extra) : ''),
-				log = '<li>'+
-						'<span class="data">' + dt.toLocaleTimeString() + '</span>' +
-						'<label>' + title + '</label>' +
-						'<span class="extra">' + str + '</span>' + 
-						(typeof query === 'string' ? '<pre><code>' + query + '</code></pre>' : '')  +
-					'</li>';
+				log = '<tr>'+
+						'<td width="75px" class="data">' + dt.toLocaleTimeString() + '</td>' +
+						'<td width="125px">' + title + '</td>' +
+						'<td class="extra">' + str +
+							(typeof query === 'string' ? '<pre><code>' + query + '</code></pre>' : '')  +
+						'</td>' +
+					'</tr>';
 
-			$("#brackets-sql-connector-log-pane > ul").prepend(log);
+			$("#brackets-sql-connector-log-pane tbody").prepend(log);
 		},
 
-		add_result = function(fields, rows, query, error) {
+		clear_log = function() {
+			$("#brackets-sql-connector-log-pane tbody").empty();
+		},
+
+		add_result = function(fields, rows, query, error, server) {
 
 			if ( error ) {
 				add_log('Error', error);
@@ -54,16 +59,19 @@ define( function( require, exports, module ) {
 			}
 
 			if ( fields === null && typeof rows === 'object' ) {
-				add_log(Strings.QUERY_COMPLETED + ": " + rows.message);
+				add_log(Strings.QUERY_COMPLETED, rows.message);
 				CommandManager.execute(cmds.VIEW_LOG);
 				return;
 			}
 
 			ids = ids + 1;
 			var cid = ids,
+				dt = new Date(),
 				$pane = $(Mustache.render(queryResultSetTemplate, {
 					Strings: Strings,
-					Id: cid
+					Id: cid,
+					Server: server,
+					DateTime: dt.toLocaleDateString() + " " + dt.toLocaleTimeString()
 				})),
 				$tbl = $('table', $pane),
 				i=0,il=fields.length,f,
@@ -88,17 +96,18 @@ define( function( require, exports, module ) {
 				}
 				$("tbody", $tbl).html(html);
 
-				add_log(Strings.QUERY_COMPLETED + ' ' + fields.length + ' fields, ' + rows.length + ' rows');
-				add_achor(cid);
-				$("#brackets-sql-connector-log-pane").removeClass("active").siblings().removeClass('active');
-				$("#brackets-sql-connector-log-pane").after($pane.addClass('active'));
+				add_log(Strings.QUERY_COMPLETED, fields.length + ' fields, ' + rows.length + ' rows');
+				add_anchor(cid);
+				$("#brackets-sql-connector-modifications-pane").removeClass("active").siblings().removeClass('active');
+				$("#brackets-sql-connector-modifications-pane").after($pane.addClass('active'));
 
 			CommandManager.execute(cmds.OPEN_RESULT_PANE);
 		};
 
 	module.exports = {
 		add: add_result,
-		log: add_log
+		log: add_log,
+		clearLog: clear_log
 	};
 
 });

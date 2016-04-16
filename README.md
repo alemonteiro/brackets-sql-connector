@@ -80,6 +80,16 @@ in the /node folder.
 
 ## Release Notes ##
 
+### v 0.5.5 ###
+
+* Indicator status label will go back to server name 10 seconds after displaying last query result or error
+* Added time and server on each result set panel
+* Added server and number of modifications on modifications tab
+* Added 'table-striped' style to tables for default styling
+* Changed log from list to table
+* Compiled connection images state inside only one
+* Removed some unused images and css styles
+
 ### v 0.5.4 ###
 
 * Added auto install of dependencies

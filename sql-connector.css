@@ -357,29 +357,19 @@ button.btn-server-setup > b {
 	border: none;
 	/*color: #FFF;*/
 	background-repeat: no-repeat;
-	background-size: contain;
-	background-position: center center;
-	background-origin: content-box;
 	width: 24px;
 	height: 24px;
-	padding: 3px;
-	margin: 0 3px;
 	cursor: pointer;
-}
-.brackets-sql-connector-browser button.btn-icon path {
-
-}
-.brackets-sql-connector-browser button.btn-icon.btn-new-query {
-	background-image: url('images/edit_query_white.svg');
+	background-image: url('images/connections.svg');
 }
 .brackets-sql-connector-browser button.btn-icon.btn-server-select {
-	background-image: url('images/connection_white.svg');
+
 }
 .brackets-sql-connector-browser.connected button.btn-icon.btn-server-select {
-	background-image: url('images/connection_green.svg');
+	background-position: 0px -24px;
 }
 .brackets-sql-connector-browser button.btn-icon.btn-server-setup {
-	background-image: url('images/mechanic_white.svg');
+	background-image: url('images/gears.svg');
 }
 .brackets-sql-connector-status-indicator button.btn-query-execute{
 	background-image: url('images/play_white.svg');
@@ -392,6 +382,13 @@ button.btn-server-setup > b {
 	height: 16px;
 	display: none;
 }
+
+.brackets-sql-connector-status-indicator .label {
+	vertical-align: top;
+	height: 25px;
+	line-height: 25px;
+}
+
 .brackets-sql-connector-status-indicator.connected.has-sql button.btn-query-execute{
 	display: inline-block;
 }
@@ -406,47 +403,34 @@ button.btn-server-setup > b {
 	animation-timing-function: linear;
 }
 
-.brackets-sql-connector-status-indicator > label { display: inline-block; }
-.brackets-sql-connector-status-indicator > label::before{
-	content: " ";
+.brackets-sql-connector-status-indicator .brackets-sql-connector-indicator-icon{
 	background: none;
 	border: none;
 	/*color: #FFF;*/
 	background-repeat: no-repeat;
-	background-size: contain;
-	background-position: center center;
-	background-origin: content-box;
-	background-image: url('images/connection_white.svg');
-	width: 12px;
-	height: 12px;
+	background-image: url('images/connections.svg');
+	background-origin: padding-box;
+	width: 16px;
+	height: 16px;
 	padding: 0px;
 	margin: 0px;
-	padding-top: 5px;
 	margin-right: 5px;
+	margin-top: 7px;
 	display: inline-block;
+	background-size: 32px 32px;
 }
 
-.brackets-sql-connector-status-indicator.connected > label::before{
-	content: " ";
-	background: none;
-	border: none;
-	color: #FFF;
-	background-repeat: no-repeat;
-	background-size: contain;
-	background-position: center center;
-	background-origin: content-box;
-	background-image: url('images/connection_green.svg');
-	width: 12px;
-	height: 12px;
-	padding: 0px;
-	margin: 0px;
-	padding-top: 5px;
-	margin-right: 5px;
-	display: inline-block;
+.indicator-label { display: inline-block; }
+
+.brackets-sql-connector-status-indicator.connected .brackets-sql-connector-indicator-icon{
+	background-position: 0px -16px;
+}
+
+.brackets-sql-connector-status-indicator.error .brackets-sql-connector-indicator-icon{
+	background-position: -16px -16px;
 }
 
 .brackets-sql-connector-result-pane {
-	/*background: #090909;*/
 	padding: 4px 5px;
 	position: relative;
     max-height: 75%;
@@ -469,15 +453,15 @@ button.btn-server-setup > b {
 .brackets-sql-connector-result th {
 	padding: 2px;
 	border-collapse: collapse;
-	border: 1px solid #AAA;
-	/*background: #2c2c2c;*/
+	/*border: 1px solid #AAA;*/
 	
   	-webkit-user-select: text; 
   	user-select: text;         
+	text-align: center;
 }
 .brackets-sql-connector-result td {		
-	border-right: 1px solid #999;
-	text-align: center;
+	/*border-right: 1px solid #999;*/
+	text-align: left;
 	padding: 1px;
 	
   	-webkit-user-select: text; 
@@ -489,7 +473,6 @@ button.btn-server-setup > b {
 .brackets-sql-connector-result tbody tr:nth-child(odd) {
 	/*background: #424242;	*/
 }
-
 .brackets-sql-connector-results-sets ul {
 	list-style-type: none;
 }
@@ -497,7 +480,6 @@ button.btn-server-setup > b {
 	float: left;
 	padding: 0.1em;
 	display: inline-block;
-	
 }
 .brackets-sql-connector-results-sets ul li a {
 	padding: 0.1em 0.3em;

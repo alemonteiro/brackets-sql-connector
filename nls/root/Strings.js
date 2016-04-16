@@ -47,6 +47,9 @@ define( {
 	SERVER: "Server",
 	OPEN: "Open",
 	CLOSE: "Close",
+	AT: "At",
+	ON: "On",
+	OFF: "Off",
     REFRESH: "Refresh",
 	MANAGE_SERVERS: "Manage Servers",
 	ENGINE: "Engine",
@@ -61,6 +64,7 @@ define( {
     ALTER: "Alter",
     DROP: "Drop",
     MODIFY: "Modify",
+	ACTION: "Action",
 
     CLEAR_MODIFICATIONS_CONFIRMATION: "Are you sure you want to clear {{modifications}}?", // {{modifications}} will holder either the length of modifications being cleared or the query when removing one
     CLEAR_LOG: "Clear Log",
@@ -80,6 +84,8 @@ define( {
 	FIELDS: "Fields",
 	VIEWS: "Views",
 	VIEW: "View",
+	ROWS: "Rows",
+	ROW: "Row",
 	PROCEDURES: "Stored Procedures",
 	PROCEDURE: "Stored Procedured",
 	FUNCTIONS: "Functions",
@@ -108,8 +114,10 @@ define( {
 	"QUERY_INSERTED_ID" : "Inserted ID",
 	"ERROR": "Error",
 	"PARSE_ERROR": "Parse Error",
+	FINISHED_ON : "Finished on",
 
 	// RESULT PANES
+	RESULT: "Result",
 	RESULT_SET: "Result Set",
 	RESULT_PANEL: "Result Panel",
 	TOGGLE_RESULT_PANEL: "Toggle Result Panel",
@@ -153,4 +161,8 @@ define( {
 	LOG_VIEWER_TITLE: 'Log Viewer',
 	LOG_VIEWER_EMPTY: 'No log to show.',
 	
+	CLICK_TO_OPEN_MENU: 'Click to open options menu',
+	CLICK_TO_MANAGE_SERVERS: 'Click to manage server settings',
+	CLICK_TO_EXECUTE_CURRENT: 'Click to execute current selection or document'
+
 } );
