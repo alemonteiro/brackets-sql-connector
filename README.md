@@ -60,7 +60,7 @@ Brackets registry editor sometimes doesn't handle large uploads and I wasn't abl
 * MS SQL Server Connections are made possible by https://www.npmjs.com/package/mssql
 * PG SQL Server Connections are made possible by https://www.npmjs.com/package/pg
 
-* Auto Install by [@iNovozhilov](https://github.com/iNovozhilov)
+* Auto Install by [@IgorNovozhilov](https://github.com/IgorNovozhilov)
 
 
 ## Notes for developers ##
