@@ -37,6 +37,7 @@ define(function (require, exports, module) {
 		this.commandReg = new RegExp(COMMANDS.join("|"), "i");
 		this.queryWordsReg = new RegExp(QUERY_WORDS.join("|"), "i");
 		this.beforeTableWords = new RegExp(BEFORE_TABLES.join("|"), "i");
+		/* Wrong exp crashing - need much more work
 		this.beforeFuncSymbos = new RegExp((function() {
 			var s = '';
 			for (var i in BEFORE_FUNCS_SYMBOLS) {
@@ -44,6 +45,7 @@ define(function (require, exports, module) {
 			}
 			return s;
 		})());
+		*/
     }
 
     /**
@@ -128,6 +130,7 @@ define(function (require, exports, module) {
 				}
 			}
 		}
+		/*
 		else if ( textBeforeCursor.match(this.beforeFuncSymbos)) {
 			for(var j in SqlRef){
 				c = SqlRef[j];
@@ -136,6 +139,7 @@ define(function (require, exports, module) {
 				}
 			}
 		}
+		*/
 		else {
 			for(i in COMMANDS){
 				c = COMMANDS[i];

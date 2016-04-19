@@ -94,6 +94,13 @@ in the /node folder.
 
 ## Release Notes ##
 
+### v 0.5.7 ###
+
+Bug Fixes
+
+* Menu not closing on focus out
+* 'Execute Current Selection' being shown when no connection is made but there's text selected
+
 ### v 0.5.6 ###
 
 * Reorganized menu with sub-menus

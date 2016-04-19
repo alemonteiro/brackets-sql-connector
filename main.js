@@ -1107,7 +1107,7 @@ define(function (require, exports, module) {
 			}).show();
 		})
 		.on('blur', function(evt) {
-			//$ul.remove();
+			$ul.remove();
 		})
         .focus();
 		

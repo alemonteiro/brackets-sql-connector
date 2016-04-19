@@ -105,7 +105,10 @@ ul.brackets-sql-connector-servers-menu {
 	margin: 0;
 	padding: 0;
 }
-.brackets-sql-connector-servers-menu.no-connections li.disconnect {
+.brackets-sql-connector-servers-menu.no-connections li.disconnect,
+.brackets-sql-connector-servers-menu.no-connections li.set-current,
+.brackets-sql-connector-servers-menu.no-connections li.execute-file,
+.brackets-sql-connector-servers-menu.no-connections li.execute-selection{
 	display: none;
 }
 .brackets-sql-connector-servers-menu.no-text-selection li.execute-selection 	{	display: none; }
