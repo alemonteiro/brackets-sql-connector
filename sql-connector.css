@@ -89,11 +89,15 @@ a#brackets-sql-connector-icon.installing {
 	width: auto;
 }
 
-ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-height: 100px; height: auto;}
-.brackets-sql-connector-servers-menu li { padding: 3px 0; }
-.brackets-sql-connector-servers-menu li:not(.connect-to):not(.separator):not(.set-current-connection):not(.disconnect-from):hover {
-	background: rgba(0, 0, 0, 0.25);
+ul.brackets-sql-connector-servers-menu {
+	max-height: 620px !important; min-height: 100px; height: auto;
+	overflow: visible;
 }
+.brackets-sql-connector-servers-menu li { padding: 3px 0; }
+.brackets-sql-connector-servers-menu li:hover {
+	background: rgba(0, 0, 185, 0.5);
+}
+
 .brackets-sql-connector-servers-menu h2 {font-size: 14px; padding: 2px; font-weight: bold;margin: 0; line-height: normal;}
 .brackets-sql-connector-servers-menu .separator{
 	height: 0px;
@@ -101,7 +105,6 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 	margin: 0;
 	padding: 0;
 }
-
 .brackets-sql-connector-servers-menu.no-connections li.disconnect {
 	display: none;
 }
@@ -109,14 +112,25 @@ ul.brackets-sql-connector-servers-menu { max-height: 620px !important; min-heigh
 .brackets-sql-connector-servers-menu.no-sql-file li.execute-file 		{ display: none; }
 .brackets-sql-connector-servers-menu.no-other-server li.set-current 			{ display: none; }
 
-
 .brackets-sql-connector-servers-menu.no-servers + li {
 	display: none;
+}
+li.sub-anchor {
+	position: relative;
+	overflow: visible;
 }
 
 .brackets-sql-connector-servers-menu.no-servers li.view-modifications,
 .brackets-sql-connector-servers-menu.no-connections li.view-modifications{
     display: none;
+}
+
+.brackets-sql-connector-servers-menu .sub-menu {
+	position: absolute;
+	max-height: 420px !important;
+	min-height: 40px;
+	height: auto;
+	display: none;
 }
 
 /* Checkbox has less height than standard text box */

@@ -20,6 +20,7 @@ define( function( require, exports, module ) {
         VIEW_MODIFICATIONS_SCRIPT : prefix+'.viewModificationsScript',
         CLEAR_MODIFICATIONS : prefix+'.clearModifications',
         CLEAR_LOG : prefix+'.clearLog',
+		CLEAR_RESULT_SETS : prefix+'.clearResultSets',
         REFRESH : prefix+'.refresh'
 	};
 });

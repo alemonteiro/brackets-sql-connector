@@ -3,9 +3,10 @@ brackets-sql-connector
 
 Connect to your databases directly from brackets. Browser the schema with an right panel and be able to execute sql directly from the editor.
 
+
 ## Features ##
 
-* V 0.5.0 Supports MySQL, MS SQL Server(>=2005) and PostgreSQL
+* V 0.5.0 (and latters) Supports MySQL, MS SQL Server(>=2005) and PostgreSQL
 * Browser Panel (shows tables, fields, views, functions and procedures)
 * Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
 * Result Sets Panel with log viewer
@@ -19,21 +20,34 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 
 ## Getting Started ##
 
-1. Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
+### Requirements ###
+
+* https://npmjs.com
+
+* Node Package Manager is required since version 0.5.4!! Npm is used to install the dependencies required to connect to each sql engine
+
+### Default Install Install ###
+
+1. On Brackets Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
 2. Search for SQL Browser or SQL Connector;
 3. Click Install;
 4. Click the SQL Connector icon (database with gears) on the right toolbar to open the browser panel;
-5. Click on the status bar label (Normally 'Not Connected') to open the Menu 
-8. Shortcuts: 
-    * (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
+5. Wait the Install process on the status bar until it's says 'Not Connected'
 
-## Auto Install ##
+* To open browser panel click on the Database With Gear icon on the right tool bar
+* To open the quick menu 'right click' on the database icon or click on the status bar indicator
 
-Brackets registry editor sometimes doesn't handle large uploads and I wasn't able to update the version of the extension.
+### Auto Installation of Dependencies ###
 
 > Did the automatic installation of dependencies when you first start. At the time of installation commands are not available, the status bar shows "Installing...", the plugin icon is highlighted in orange.
 
+
+Brackets registry editor sometimes doesn't handle large uploads and I wasn't able to update the version of the extension.
+
 ## Executing from editor ##
+
+#### Shortcuts: 
+	* (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
 
 * On the bottom panel should be a green connection icon with yout server name in front of it.
 * When you hit Alt-Enter 
@@ -79,6 +93,11 @@ in the /node folder.
 * Interface to config default extension settings
 
 ## Release Notes ##
+
+### v 0.5.6 ###
+
+* Reorganized menu with sub-menus
+* Added Clear Log and Clear Result Panes commands
 
 ### v 0.5.5 ###
 

@@ -13,6 +13,7 @@ define(function (require, exports, module) {
 	// Get dependencies.
 	var Async = brackets.getModule('utils/Async'),
 		Menus = brackets.getModule('command/Menus'),
+        CodeHintManager     = brackets.getModule("editor/CodeHintManager"),
 		CommandManager = brackets.getModule('command/CommandManager'),
 		Commands = brackets.getModule('command/Commands'),
 		PreferencesManager = brackets.getModule('preferences/PreferencesManager'),
@@ -29,7 +30,7 @@ define(function (require, exports, module) {
 		ExtensionUtils = brackets.getModule('utils/ExtensionUtils'),
 		NodeDomain = brackets.getModule("utils/NodeDomain"),
 		StatusBar = brackets.getModule('widgets/StatusBar'),
-		
+
 		// Extension basics.
 		Strings = require('modules/Strings'),
 		settingsDialog = require('modules/SettingsDialog'),
@@ -38,6 +39,7 @@ define(function (require, exports, module) {
 		dataStorage = require('modules/DataStorageManager'),
 		Cmds = require('modules/SqlConnectorCommands'),
 		Indicator = require('modules/Indicator'),
+		QueryHints = require('modules/QueryHints'),
 		
 		// Preferences.
 		preferences = PreferencesManager.getExtensionPrefs('alemonteiro.bracketsSqlConnector'),
@@ -81,6 +83,7 @@ define(function (require, exports, module) {
 	
 
     preferences.definePreference('enabled', 'boolean', true);
+	preferences.definePreference('sqlHints', 'boolean', false);
 	preferences.definePreference('browserPanelEnabled', 'boolean', false);
 	preferences.definePreference('resultPanelEnabled', 'boolean', false);
     preferences.definePreference('autoReconnectOnLoad', 'boolean', false);
@@ -269,6 +272,8 @@ define(function (require, exports, module) {
 	*/
 	function resizeBrowserPanel() {
 		$browserPanel.height(($("#editor-holder").height() - 24) + 'px');
+
+		$('div.brackets-sql-connector-result-tab-body', $queryPanel).height(($queryPanel.height()-30) + 'px');
 	}
 	
 	/**
@@ -415,7 +420,7 @@ define(function (require, exports, module) {
      */
     function clearModifications(serverId) {
         var svr = getCurrentServer(serverId);
-        if ( svr && svr.modifications.length > 0 ) {
+        if ( svr && svr !== undefined && svr.modifications.length > 0 ) {
             settingsDialog.showConfirmation(Strings.CLEAR_MODIFICATIONS, Mustache.render(Strings.CLEAR_MODIFICATIONS_CONFIRMATION, {
                 modifications: svr.modifications.length
             }), function() {
@@ -424,6 +429,9 @@ define(function (require, exports, module) {
         }
     }
 
+	/**
+	* Clears the modification panel
+	*/
     function clearModificationsUI() {
        Modifications.resetUI();
     }
@@ -959,6 +967,8 @@ define(function (require, exports, module) {
 
 	/**
 	 * Show server pop up menu
+	 * @param {jQuery object} $btn 	Toogle Trigger
+	 * @param {boolean} onTop 		If it's shown above the trigger. Default: true
 	 */
 	function showServerMenu($btn, onTop){
 		
@@ -1023,9 +1033,9 @@ define(function (require, exports, module) {
 		}))
 		.appendTo("body");
 		
-		$('li.connect-to', $ul).after(htmlNotConnected);
-		$('li.disconnect-from', $ul).after(htmlConnected);
-		$('li.set-current-connection', $ul).after(htmlSetCurrent);
+		$('li.connect-to > ul', $ul).html(htmlNotConnected);
+		$('li.disconnect-from > ul', $ul).html(htmlConnected);
+		$('li.set-current-connection > ul', $ul).html(htmlSetCurrent);
 		
 		$ul.on('mousedown', 'a', function(evt) {
 			evt.stopPropagation();
@@ -1046,11 +1056,13 @@ define(function (require, exports, module) {
 			else if (action === "set-active") {
 				setSelectedServer(id, false);
 			}
-			else if (action === "execute-file" ) {
-				CommandManager.execute(Cmds.EXECUTE_CURRENT_FILE);
+			else if (action === "execute-file" ) {	CommandManager.execute(Cmds.EXECUTE_CURRENT_FILE);
 			}
 			else if (action === "view-log" ) {
 				CommandManager.execute(Cmds.VIEW_LOG);
+			}
+			else if (action === "clear-log" ) {
+				CommandManager.execute(Cmds.CLEAR_LOG);
 			}
 			else if (action === 'execute-selection') {
 				CommandManager.execute(Cmds.EXECUTE_CURRENT);
@@ -1062,11 +1074,13 @@ define(function (require, exports, module) {
 			else if (action === 'toggle-result-panel') {
 				CommandManager.execute(Cmds.TOGGLE_RESULT_PANEL);
 			}
-			else if (action === 'toggle-browser-panel') {
-				CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
+			else if (action === 'toggle-browser-panel') {	CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
 			}
 			else if (action === "connect" && id > 0 ) {
 				setSelectedServer(id, true);
+			}
+			else if (action === "clear-modifications" ) {
+				CommandManager.execute(Cmds.CLEAR_MODIFICATIONS);
 			}
 			else if (action === "view-modifications" ) {
 				CommandManager.execute(Cmds.VIEW_MODIFICATIONS);
@@ -1074,8 +1088,26 @@ define(function (require, exports, module) {
 			else if (action === "view-modifications-script" ) {
 				CommandManager.execute(Cmds.VIEW_MODIFICATIONS_SCRIPT);
 			}
-		}).on('blur', function(evt) {
-			$ul.remove();	
+			else if (action === "clear-result-sets") {
+				CommandManager.execute(Cmds.CLEAR_RESULT_SETS);
+			}
+		})
+		.on('mouseenter', 'li', function(evt) {
+			$('.sub-menu', $ul).hide();
+
+			if ( ! $(this).hasClass('sub-anchor') ) {
+				return;
+			}
+			var $subUl = $(this).children('ul');
+
+			$subUl
+			.css({
+				left: '-' + ($subUl.width()-5) + 'px',
+				top: '-' + ($subUl.height()/2) + 'px',
+			}).show();
+		})
+		.on('blur', function(evt) {
+			//$ul.remove();
 		})
         .focus();
 		
@@ -1085,7 +1117,8 @@ define(function (require, exports, module) {
 				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
 				top: 'auto',
 				right: 'auto',
-				bottom: ($("body").height() - off.top + 5) + 'px'
+				bottom: ($("body").height() - off.top + 5) + 'px',
+				overflow: 'visible'
 			});
 		}
 		else {
@@ -1093,7 +1126,8 @@ define(function (require, exports, module) {
 				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
 				top: (off.top + 20) + 'px',
 				right: 'auto',
-				bottom: 'auto'
+				bottom: 'auto',
+				overflow: 'visible'
 			});
 		}
 	}
@@ -1210,10 +1244,10 @@ define(function (require, exports, module) {
             }
 
             if ( add_refresh ) {
-            $ul.append(''+
-                '<li data-action="refresh" class="refresh">' +
-                    '<a href="#">'+Strings.REFRESH+'</a>' +
-                '</li>');
+				$ul.append(''+
+					'<li data-action="refresh" class="refresh">' +
+						'<a href="#">'+Strings.REFRESH+'</a>' +
+					'</li>');
             }
 
             $ul.appendTo("body").css({
@@ -1463,6 +1497,11 @@ define(function (require, exports, module) {
 			.on('click', '.close', function () {
 				enableBrowserPanel(false);
 			});
+
+		if ( preferences.get('sqlHints') === true ) {
+			var hq = new QueryHints.QueryHints();
+        	CodeHintManager.registerHintProvider(hq, ["sql"], 1);
+		}
 
 		// Setup listeners.
 		registerListeners();

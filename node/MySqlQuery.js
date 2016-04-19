@@ -48,5 +48,9 @@ module.exports = {
 	
 	showProcedures: function(db, name) {
 		return this.showRoutines(db, 'PROCEDURE');
+	},
+
+	getCacheForHints: function(db) {
+		return ("select distinct from information_schema.columns WHERE TABLE_SCHEMA = '"+db+"'");
 	}
 };

@@ -19,10 +19,10 @@ define( {
 	CONNECTION: 'Connection',
 	CONNECTIONS: 'Connections',
 	CONNECT: 'Connect',
-	CONNECT_TO: 'Connect To: ',
+	CONNECT_TO: 'Connect To',
 	CONNECTING: 'Connecting',
 	DISCONNECT: 'Disconnect',
-	DISCONNECT_FROM: 'Disconnect From: ',
+	DISCONNECT_FROM: 'Disconnect From',
 	DISCONNECT_CURRENT: 'Disconnect Current',
 	DISCONNECT_ALL: 'Disconnect All',
 	DISCONNECTING: 'Disconnecting',
@@ -56,7 +56,7 @@ define( {
 	VIEW_LOG: "View Log",
     VIEW_MODIFICATIONS: "View Modifications",
     VIEW_MODIFICATIONS_SCRIPT: "View Full Script",
-    CLEAR_MODIFICATIONS: "Clar Modifications",
+    CLEAR_MODIFICATIONS: "Clear Modifications",
     EXPORT: "Export",
     IMPORT: "Import",
     SHOW: "Show",
@@ -69,6 +69,7 @@ define( {
     CLEAR_MODIFICATIONS_CONFIRMATION: "Are you sure you want to clear {{modifications}}?", // {{modifications}} will holder either the length of modifications being cleared or the query when removing one
     CLEAR_LOG: "Clear Log",
 	LOG: "Log",
+	LOGS: "Logs",
     MODIFICATIONS: "Modifications",
 	DATE: "Date",
     PROJECT: "Project",
@@ -76,6 +77,10 @@ define( {
     FILE_ORIGIN: "File Origin",
     SQL_COMMAND: "SQL Command",
 	
+	CLOSE_THIS: "Close this",
+	CLOSE_ALL: "Close all",
+	CLOSE_ALL_EXCEPT_THIS: "Close all except this",
+
 	DATABASE: "Database",
 	DATABASES: "Database",
 	TABLE: "Table",
@@ -119,7 +124,10 @@ define( {
 	// RESULT PANES
 	RESULT: "Result",
 	RESULT_SET: "Result Set",
+	RESULT_SETS: "Result Sets",
 	RESULT_PANEL: "Result Panel",
+	CLEAR_RESULT_SETS: "Clear Result Sets",
+
 	TOGGLE_RESULT_PANEL: "Toggle Result Panel",
 	TOGGLE_BROWSER_PANEL: "Toggle Browser Panel",
 	
@@ -165,4 +173,4 @@ define( {
 	CLICK_TO_MANAGE_SERVERS: 'Click to manage server settings',
 	CLICK_TO_EXECUTE_CURRENT: 'Click to execute current selection or document'
 
-} );
+});
