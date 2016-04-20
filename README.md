@@ -98,6 +98,12 @@ in the /node folder.
 
 Bug Fixes
 
+* Menu closing when on sub-menu hover 
+
+### v 0.5.7 ###
+
+Bug Fixes
+
 * Menu not closing on focus out
 * 'Execute Current Selection' being shown when no connection is made but there's text selected
 

@@ -1093,7 +1093,10 @@ define(function (require, exports, module) {
 			}
 		})
 		.on('mouseenter', 'li', function(evt) {
-			$('.sub-menu', $ul).hide();
+
+			if ( ! $(this).parent().hasClass("sub-menu")) {
+				$('.sub-menu', $ul).hide();
+			}
 
 			if ( ! $(this).hasClass('sub-anchor') ) {
 				return;
