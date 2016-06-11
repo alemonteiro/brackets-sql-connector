@@ -1,4 +1,7 @@
-<ul class="dropdown-menu dropdownbutton-popup brackets-sql-connector-servers-menu {{MENU_STATUS}} dark "  tabindex="1">
+<ul class="dropdown-menu dropdownbutton-popup brackets-sql-connector-servers-menu {{MENU_STATUS}}"  tabindex="1">
+	<li data-action="db-compare">
+		<a href="#">{{Strings.DB_COMPARE}}</a>
+	</li>
 	<li data-action="new-connection">
 		<a href="#">{{Strings.MANAGE_SERVERS}}</a>
 	</li>
@@ -44,16 +47,16 @@
 	<li class="sub-anchor" data-action="toggle-result-panel" data-id="0">
 		<a href="#">{{Strings.RESULT_SETS}}</a>
 		<ul class="dropdown-menu dropdownbutton-popup sub-menu">
-			<li><a data-action="clear-result-sets" href="#">{{Strings.CLEAR_RESULT_SETS}}</a></li>
-			<li><a data-action="toggle-result-panel" href="#">{{PANEL_ACTION}} {{Strings.RESULT_PANEL}}</a></li>
+			<li data-action="clear-result-sets"><a href="#">{{Strings.CLEAR_RESULT_SETS}}</a></li>
+			<li data-action="toggle-result-panel"><a href="#">{{PANEL_ACTION}} {{Strings.RESULT_PANEL}}</a></li>
 		</ul>
 	</li>
 
 	<li class="sub-anchor" data-action="view-log" data-id="0">
 		<a href="#">{{Strings.LOGS}}</a>
 		<ul class="dropdown-menu dropdownbutton-popup sub-menu">
-			<li><a data-action="clear-log" href="#">{{Strings.CLEAR_LOG}}</a></li>
-			<li><a data-action="view-log" href="#">{{Strings.VIEW_LOG}}</a></li>
+			<li data-action="clear-log"><a href="#">{{Strings.CLEAR_LOG}}</a></li>
+			<li data-action="view-log"><a href="#">{{Strings.VIEW_LOG}}</a></li>
 		</ul>
 	</li>
 

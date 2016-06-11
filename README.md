@@ -3,9 +3,23 @@ brackets-sql-connector
 
 Connect to your databases directly from brackets. Browser the schema with an right panel and be able to execute sql directly from the editor.
 
+# NPM Install #
+
+If you get errors in the installation it's probably related to the NPM install. Maybe you don't have Node Package Manager installed or maybe the extension is not being able to access it properly.
+
+The workaround is to get the modules from the command line.
+
+Use Brackets menu  *`Help -> Show Extension Folder`*, go to *`brackets-sql-connector/node`* folder and open it on the prompt/command line.
+
+On the prompt execute *`npm install`*
+
+You should see the modules being installed and will be good to go =)
+
+If it still doesn't work, check the Full Package install bellow.
 
 ## Features ##
 
+* V 0.6.0 SQL Query Hints starting to work the basic expected (need to enable by preference files -> sqlHints = true [default to false])
 * V 0.5.0 (and latters) Supports MySQL, MS SQL Server(>=2005) and PostgreSQL
 * Browser Panel (shows tables, fields, views, functions and procedures)
 * Run SQL Commands from editor (Alt+Enter execute current selecion or current open document)
@@ -22,11 +36,11 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 
 ### Requirements ###
 
-* https://npmjs.com
+* NPM -> https://nodejs.org/en/download/ (Make sure you install WITH Node Package Manager)
 
-* Node Package Manager is required since version 0.5.4!! Npm is used to install the dependencies required to connect to each sql engine
+* Node Package Manager is required since version 0.5.4!! Npm is used to install the dependencies required to connect to each sql engine. This was added because of problems with large files on the brackets extension registry.
 
-### Default Install Install ###
+### Default Install ###
 
 1. On Brackets Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
 2. Search for SQL Browser or SQL Connector;
@@ -41,8 +55,15 @@ Connect to your databases directly from brackets. Browser the schema with an rig
 
 > Did the automatic installation of dependencies when you first start. At the time of installation commands are not available, the status bar shows "Installing...", the plugin icon is highlighted in orange.
 
-
 Brackets registry editor sometimes doesn't handle large uploads and I wasn't able to update the version of the extension.
+
+So, if you have NPM installed we try to install the required modules automatic for you =)
+
+### Alternative Install - Full Package ###
+
+If still having problems with NPM install you can download the full package and extract it to the brackects extension folder.
+
+Full package download: http://alemonteiro.com.br/downloads/brackets-sql-connector.zip
 
 ## Executing from editor ##
 
@@ -51,15 +72,38 @@ Brackets registry editor sometimes doesn't handle large uploads and I wasn't abl
 
 * On the bottom panel should be a green connection icon with yout server name in front of it.
 * When you hit Alt-Enter 
-1. If there's any text select it will try to run it (in any type of file)
-2. If no text is select then only SQL Documents will be executed
-   
+		1. If there's any text select it will try to run it (in any type of file)
+		2. If no text is select then only SQL Documents will be executed
+  
 ## Stored Modifications ##
 
 * There's a setting for saving executed SQLs that makes changes to the database incluing insert, update, delete, alter, change, remove, drop, create and modify
 * Saved modifications are stored by server, not by project
 * You can delete an saved modification
 
+## SQL Hinting ##
+
+Disabled by default and working only .sql files for now, enabled by preferences file: `"alemonteiro.bracketsSqlConnector.sqlHints": true`
+
+Reload brackets after making disabling/enabling preferences.
+
+
+If enabled hinting will cache the sql reference available for the engine (current only MySQL), the list of table names from the current connected database, and the field names for the viewed tables on the browser or used in a statement inside the current .sql file;
+
+ Hints for 
+ 
+* Basic sql commands like SELECT, ALTER, UPTADE and etc
+* Tables names after an table command (like one of the aboves and FROM, JOIN, DELETE and etc)
+* Fields names when using table alias or tables name prefix
+* MySQL Reference Functions with basic description
+ 
+ 
+ ## DataBase Compare ##
+ 
+ In version 0.5.9 it will only strike tables that doesn't exist on that server.
+ 
+ You must connect to both servers before starting the compare.
+ 
 ## Restrictions / Not Implemented stuff / Buggy ##
 	
 * Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
@@ -67,7 +111,7 @@ Brackets registry editor sometimes doesn't handle large uploads and I wasn't abl
 * No SSL support yet
 * The Browser panel hides the second editor scroll bar. (This panel is an "fix" cause brackets doesn't have API for side panels yet).
 
-### Contributions And Attributions ###
+## Contributions And Attributions ##
 
 * Those fabulous icons are given by freekpik: http://freepik.com
 * MySQL Server Connections are made possible by https://www.npmjs.com/package/mysql
@@ -75,7 +119,6 @@ Brackets registry editor sometimes doesn't handle large uploads and I wasn't abl
 * PG SQL Server Connections are made possible by https://www.npmjs.com/package/pg
 
 * Auto Install by [@IgorNovozhilov](https://github.com/IgorNovozhilov)
-
 
 ## Notes for developers ##
 
@@ -89,30 +132,48 @@ in the /node folder.
 
 * Use pg and mssql connection pools
 * Configurable one connection and result sets per editor
-* Better organize / divide menus (probably best submenus)
 * Interface to config default extension settings
+* Compare table fields and properties
+* Allow connection without pre-selected database
+* Add portuguese translation
 
 ## Release Notes ##
 
-### v 0.5.7 ###
+### v 0.6.0 ###
+
+* Added Trusted Connection and Instance Name support for MS SQL Server
+* Added context menu from extension icon on the right panel
+* Added initial database tables compare
+* Improved experimental sql query hinting
+	1. Hints for basic sql commands like SELECT, ALTER, UPTADE and etc
+	2. Hints for tables names after an table command (like one of the aboves and FROM, JOIN, DELETE and etc)
+	3. Hints for fields names when using table alias or tables name prefix ()
+	4. Hints for MySQL Functions with basic description
+
+Bug Fixes
+
+* Context Menu Log and Result Set functions not working
+* Removed default 'dark' style from server menu and result panel
+
+##### v 0.5.8 #####
 
 Bug Fixes
 
 * Menu closing when on sub-menu hover 
 
-### v 0.5.7 ###
+##### v 0.5.7 #####
 
 Bug Fixes
 
 * Menu not closing on focus out
 * 'Execute Current Selection' being shown when no connection is made but there's text selected
 
-### v 0.5.6 ###
+##### v 0.5.6 #####
 
 * Reorganized menu with sub-menus
 * Added Clear Log and Clear Result Panes commands
 
-### v 0.5.5 ###
+##### v 0.5.5 #####
 
 * Indicator status label will go back to server name 10 seconds after displaying last query result or error
 * Added time and server on each result set panel
@@ -122,7 +183,7 @@ Bug Fixes
 * Compiled connection images state inside only one
 * Removed some unused images and css styles
 
-### v 0.5.4 ###
+##### v 0.5.4 #####
 
 * Added auto install of dependencies
 
@@ -130,19 +191,19 @@ Bug Fixes
 
 * Removed custom colors and let the style be made by brackets.
 
-### v 0.5.3 ###
+##### v 0.5.3 #####
 
 Bug Fixes
 
 * Assumed default styles from brackets (all colors and background-colors from the extension css was removed and added the default 'panel' and 'dark' classes)
 
-### v 0.5.2 ###
+##### v 0.5.2 #####
 
 Bug Fixes
 
 * Added max-height to result panel
 
-### v 0.5.1 ###
+##### v 0.5.1 #####
 
 * Started using connection pool for mysql 
 
@@ -152,7 +213,7 @@ Bug Fixes
 * Fixed auto reconnecting even if there was not active connection last time.
 * Fixed show full modification script not showing sql (dates and paths are ugly yet tho)
 
-### v 0.5.0 ###
+##### v 0.5.0 #####
 
 * Added PostreSQL support
 * Added SHOW Create e ALTER for Views
@@ -162,12 +223,12 @@ Bug Fixes
 
 * Fixed MySQL Views showing as tables on browser
 
-### v 0.4.2 ###
+##### v 0.4.2 #####
 
 * Added minimal sql formatting for viewing MySQL Views/Functions/Stored Procedures that have no indentention
 * Fixed pop menu closing without executing action on windows
 
-### v 0.4.1 ###
+##### v 0.4.1 #####
 
 * Added context menu for refreshing browser itens and disconnecting from server
 
@@ -176,7 +237,7 @@ Bug Fixes
 * Fixed duplicating saved modification 
 * Fixed indicator stuck at "Executing..." after running updates
 
-### v 0.4.0 ###
+##### v 0.4.0 #####
 
 * Added save modifications support
 * Added preferences option to connect to last connection on brackets startup (no interface for it yet tho)
@@ -187,7 +248,7 @@ Bug Fixes
 * Stopped trying to load children of columns on browser panel
 * Added 'drop' as modification script
 
-### v 0.3.4 ###
+##### v 0.3.4 #####
 * Adopted brackets extension toolbar icon guidelines: https://github.com/adobe/brackets/wiki/Extension-Icon-Guidelines
 * Made result set and log text selectable
 
@@ -196,13 +257,13 @@ Bug Fixes
 * Not showing number of fetched rows on bottom indicator after query error
 * Querying not executing if "Confirm modifications" was set
 
-### v 0.3.3 ###
+##### v 0.3.3 #####
 
 Bug Fixes
 
 * Fixed execute from editor not working 
 
-### v 0.3.2 ###
+##### v 0.3.2 #####
 
 Bug Fixes
 
@@ -210,7 +271,7 @@ Bug Fixes
 * Fixed pop menu not showing when no setup existed
 * Fixed test connection not working unless server settings was saved
 
-### v 0.3.1 ###
+##### v 0.3.1 #####
 * Added default port for MS SQL Server (1433)
 
 Bug Fixes
@@ -219,7 +280,7 @@ Bug Fixes
 * Indicator Stauts keep saying is connected after Disconnect All
 * No editor connection after disconnect
 
-### v 0.3.0 ###
+##### v 0.3.0 #####
 * Added MS SQL Server support
 * Show view/procedure/function code in editor when selecting it from browser panel
 * Better re-establish last connections handling (not perfect tho)

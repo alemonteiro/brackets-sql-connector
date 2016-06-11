@@ -96,12 +96,15 @@
 				return callback(0, 0);
 			}
 			return connection.end(function (err) {
-				if (err) {
-					callback(err);
-				}
 				delete connections[connId];
+				if (err && callback) {
+					callback(err);
+					return;
+				}
 				
-				return callback(0, 1);
+				if ( callback ) {
+					return callback(0, 1);
+				}
 			});
 		},
 
@@ -144,10 +147,14 @@
 				password: dbconfig.password,
 				server: dbconfig.host, //.replace(/\/+/g, "/"),
 				database: dbconfig.database,
-				port: dbconfig.port
+				port: dbconfig.port,
+				options: {
+					trustedConnection: dbconfig.trustedConnection,
+					instanceName: dbconfig.instanceName
+				}
 			};
 			
-			//clog("MS SQL Connecting", config);
+			clog("MS SQL Connecting", config);
 			var conn = mssql.connect(config, function(err) {
 				if (err) {
 					clog("MS SQL Conn Error", err);
@@ -188,22 +195,22 @@
 			var cnn = _getConn(connId);
 			if ( cnn ) {
 				cnn.close(function(err) {
-					if (err) {
+					if (err &&  typeof callback === 'function') {
 						callback(err.code +  ': ' + err.message);
 					}
-					else {
+					else if ( typeof callback === 'function' ) {
 						callback(err, 1);
 					}
+					delete connections[connId];
 				});
 			}
-			else {
+			else if ( typeof callback === 'function' ) {
 				callback(null, 1);
 			}
 		},
 
         // PG SQL Commands
         pgQuery = function(connId, sql, callback) {
-
 			var client = _getConn(connId);
 			if ( ! client ) {
                 callback('no connection found');
@@ -246,7 +253,10 @@
 			if ( cnn ) {
 				cnn.end();
 			}
-			callback(null, 1);
+			delete connections[connId];
+			if ( callback ) {
+				callback(null, 1);
+			}
         },
 
 		// Generic DB Commands
@@ -294,6 +304,28 @@
                 clog("cmdDisconnect", err);
                 callback(err);
             }
+		},
+		cmdDisconnectAll = function(callback) {
+			var result = 0;
+			try {
+				for(var cid in connections) {
+					var c = connections[c];
+					if ( c !== undefined && c !== null ) {
+						var e = c.engine;
+						if (e === 'mssql') { mssqlDisconnect(c.serverId); }
+						else if ( e === 'mysql') { mysqlDisconnect(c.serverId); }
+						else if ( e === 'postgresql') { pgDisconnect(c.serverId); }
+						result = 0;
+					}
+				}
+			}
+			catch(err) {
+				clog("cmdDisconnectAll", err);
+				result = err;
+			}
+			finally {
+				return callback(result);
+			}
 		},
 		cmdQuery = function (connId, query, callback) {
 			
@@ -417,6 +449,7 @@
 			
 			domainManager.registerCommand(domainName, "connect", 			cmdConnect, 		   true, "Connect to a database");
 			domainManager.registerCommand(domainName, "disconnect", 		cmdDisconnect, 		  true, "Disconnect from the database");
+			domainManager.registerCommand(domainName, "disconnect_all", 	cmdDisconnectAll, 	true, "Disconnect all connections");
 			domainManager.registerCommand(domainName, "list_tables", 		cmdListTables, 		 true, "List database tables");
 			domainManager.registerCommand(domainName, "list_fields", 		cmdListFields, 		 true, "List table fields");
 			domainManager.registerCommand(domainName, "list_views", 		cmdListViews, 		   true, "List database views");

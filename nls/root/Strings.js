@@ -156,6 +156,8 @@ define( {
 	SETTINGS_DIALOG_SAVED: "Server Settings Saved",
 	SETTINGS_CONFIRM_MODIFICATIONS: "Confirm execution of modification scripts",
 	SETTINGS_SAVE_MODIFICATIONS: "Save modification scripts",
+	SETTINGS_SAVE_TRUSTED_CONNECTION: "Trusted Connection",
+	SETTINGS_DIALOG_INSTANCE_NAME: "Instance Name",
 
 	// NO SERVER SETUP DIALOG
 	NO_SERVER_SETUP: "SQL Connector - No Connections Created",
@@ -171,6 +173,17 @@ define( {
 	
 	CLICK_TO_OPEN_MENU: 'Click to open options menu',
 	CLICK_TO_MANAGE_SERVERS: 'Click to manage server settings',
-	CLICK_TO_EXECUTE_CURRENT: 'Click to execute current selection or document'
+	CLICK_TO_EXECUTE_CURRENT: 'Click to execute current selection or document',
+
+	// DataBase Compare
+
+	DB_COMPARE_TITLE: 'DataBase Compare',
+	DB_COMPARE_LEFT_SERVER: 'Left Side Server',
+	DB_COMPARE_RIGHT_SERVER: 'Right Side Server',
+	DB_COMPARE: 'Compare',
+	COMPARE: 'Compare',
+	COMPARING: 'Comparing',
+
+	TABLE_DOESNT_EXIST_ON_SERVER: "This table doesn't exist on this server"
 
 });

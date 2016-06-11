@@ -1,0 +1,29 @@
+<div id="brackets-sql-connector-compare-dialog" class="modal">
+    <div class="modal-header">
+        <h1 class="dialog-title">{{ Strings.DB_COMPARE_TITLE }}</h1>
+    </div>
+
+    <div class="modal-body table-striped tab-content brackets-sql-connector-clearfix">
+        <div class="brackets-sql-connector-compare-form left" >
+           <div class="brackets-sql-connector-compare-server">
+				<h4>{{ Strings.DB_COMPARE_LEFT_SERVER }}</h4>
+				<select size="1" class="input-server"></select>
+				<ul class="panel"></ul>
+       		</div>
+        </div>
+
+        <div class="brackets-sql-connector-compare-form right " >
+           <div class="brackets-sql-connector-compare-server">
+				<h4>{{ Strings.DB_COMPARE_RIGHT_SERVER }}</h4>
+				<select size="1" class="input-server"></select>
+				<ul class="panel"></ul>
+       		</div>
+        </div>
+    </div>
+
+    <div class="modal-footer">
+       	<label class="test-connection-status"></label>
+        <button data-button-id="compare" class="dialog-button btn">{{ Strings.COMPARE }}</button>
+        <button data-button-id="cancel" class="dialog-button btn">{{ Strings.CANCEL }}</button>
+    </div>
+</div>

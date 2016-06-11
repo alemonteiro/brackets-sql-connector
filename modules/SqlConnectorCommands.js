@@ -7,7 +7,7 @@ define( function( require, exports, module ) {
 	
 	module.exports = {
 		ENABLE 				: prefix+'.enable',
-		LIST_TABLES 		: 'alemonteiro.bracketsSqlConnector.listTables',
+		LIST_TABLES 		: prefix+'.listTables',
 		EXECUTE_CURRENT 	: prefix+'.executeCurrent',
 		EXECUTE_CURRENT_FILE :  prefix+'.executeCurrentFile',
 		CONNECTIONS			:  prefix+'.manageConnections',
@@ -21,6 +21,7 @@ define( function( require, exports, module ) {
         CLEAR_MODIFICATIONS : prefix+'.clearModifications',
         CLEAR_LOG : prefix+'.clearLog',
 		CLEAR_RESULT_SETS : prefix+'.clearResultSets',
-        REFRESH : prefix+'.refresh'
+        REFRESH : prefix+'.refresh',
+        COMPARE_DB : prefix+'.compareDB'
 	};
 });

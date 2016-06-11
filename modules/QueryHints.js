@@ -6,47 +6,85 @@ define(function (require, exports, module) {
 	var Strings = require('modules/Strings'),
 		SqlRef = require('modules/SqlReferences').mysql;
 
-    var lastLine,
-        lastFileName,
-        cachedMatches,
-        cachedWordList,
-        tokenDefinition,
-        currentTokenDefinition;
-
-	var COMMANDS = ['ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE' ],
-		COMMANDS_TARGET = ['TABLE', 'VIEW', 'FUNCTION', 'PROCEDURE', 'TRIGGER', 'INDEX'],
+	// Generic Know Commands
+	var COMMANDS = ['ALTER', 'CREATE', 'DROP', 'RENAME', 'TRUNCATE', 'EXEC', 'EXECUTE', 'SELECT', 'MODIFY', 'SET', 'ADD ' ],
+		COMMANDS_TARGET = ['COLUMN', 'DATABASE', 'SCHEMA', 'INDEX', 'FUNCTION', 'TABLE', 'VIEW', 'PROCEDURE', 'TRIGGER',  'FOREIGN KEY'],
 		QUERY_WORDS = [
-			'INSERT', 'DELETE', 'UPDATE', 'SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'AND', 'OR', 'LIMIT', 'ASC', 'DESC',
-			'DISTINCT', 'WITH',
+			'INSERT', 'DELETE', 'UPDATE', 'SELECT', 'FROM', 'WHERE', 'ORDER BY', 'GROUP BY', 'AND', 'OR', 'LIMIT', 'ASC', 'DESC', 'AS', 'DISTINCT', 'WITH', 'SET', 'TOP'
 		],
-		BEFORE_TABLES = ['TABLE', 'FROM', 'UPDATE', 'DELETE'],
-		BEFORE_FUNCS_SYMBOLS = ['=', ',', '+', '-', '/', '*'];
+		BEFORE_TABLES_WORDS = ['TABLE', 'FROM', 'UPDATE'],
+		AFTER_TABLES_WORDS = ['WHERE', 'SET', 'ORDER BY', 'GROUP BY'],
+		COL_TYPES = ['int', 'varchar', 'text', 'varbinary', 'char', 'date', 'datetime'],
+		COL_WORDS = ['AUTO_INCREMENT', 'PRIMARY KEY', 'REFERENCES', 'NOT', 'NULL', 'DEFAULT', 'INDEX'],
+		BEFORE_FUNCS_SYMBOLS = ['=', ',', '+', '-', '/', '*', '('],
+		BEFORE_STOP_HINTS_WORDS = ['AS', 'ADD', 'CREATE [\[?a-zA-Z0-9_z-\]?]'],
+
+	// Loaded data from database
+		TABLES = [],
+		FIELDS = {},
+		REFERENCES = [],
+
+	// Internal cache
+		LAST_USED_TABLES = [];
 
     /**
      * @constructor
+     * @description Define a number of regularion expressions to be used on check / get hints
      */
     function QueryHints() {
-		this.serverCache = [];
-        this.lastLine = 0;
-        this.lastFileName = "";
-        this.cachedMatches = [];
-        this.cachedWordList = [];
-        this.tokenDefinition = /[\$a-zA-Z][\-a-zA-Z0-9_]*[a-zA-Z0-9_]+/g;
-        this.currentTokenDefinition = /[\$a-zA-Z][\-a-zA-Z0-9_]+$/g;
+		this.insertHintOnTab = true;
+		this.tableCommandDefinition = /(FROM|JOIN|UPDATE|TABLE|INSERT[\s\ ]INTO)+[\s\t\n\r ]+\[?`?([\-a-zA-Z0-9_\-]+)\`?\]?[\s\t ]*[AS|SET]?[\s\t ]*\[?`?([\$a-zA-Z][\-a-zA-Z0-9_\-]*)?\]?`?;?/gmi;
 
-		this.commandReg = new RegExp(COMMANDS.join("|"), "i");
-		this.queryWordsReg = new RegExp(QUERY_WORDS.join("|"), "i");
-		this.beforeTableWords = new RegExp(BEFORE_TABLES.join("|"), "i");
-		/* Wrong exp crashing - need much more work
-		this.beforeFuncSymbos = new RegExp((function() {
-			var s = '';
-			for (var i in BEFORE_FUNCS_SYMBOLS) {
-				s += '\\' + BEFORE_FUNCS_SYMBOLS[i] + '\\';
-			}
-			return s;
-		})());
-		*/
+		this.beforeStopReg = new RegExp(BEFORE_STOP_HINTS_WORDS.join("|"), "gi");
+		this.commandReg = new RegExp(COMMANDS.join("|"), "gi");
+		this.beforeTableReg = new RegExp(BEFORE_TABLES_WORDS.join("|"), "gi");
+		this.queryWordsReg = /INSERT|DELETE|UPDATE|FUNCTION|PROCEDURE|TRIGGER|INDEX/gi;
+		this.beforeTableWords = /INSERT[\s ]INTO|DELETE|DELETE[\s ]FROM|UPDATE|SELECT|FROM|WHERE|ORDER BY|GROUP BY|AND|OR|LIMIT|ASC|DESC/gi;
+
+		this.isInSelectReg = /[\n\r\s\t ;]?SELECT[\s\t\n\r \(\)\[\]\+\-\*\\\/`´\{\}a-zA-Z0-9_,\.]*(FROM)?/;
     }
+
+	/**
+	 * Set function that will be called when fields from a table are required
+	 * @param   function func function(@string table_name) { // must call QueryHints.setTableFields(table_name, [field_name, field_name,...])}
+	 */
+	QueryHints.prototype.setLoadTableFieldFunc = function(func) {
+		this.loadTableField = function(table) {
+			if ( TABLES.indexOf(table) === -1) return false;
+			if ( FIELDS[table] === undefined) FIELDS[table] = [];
+			func.call(func, table);
+		};
+	};
+
+	/**
+	 * Set fields available on an table to hints
+	 * @param string table  table name
+	 * @param Array<string> fields array of field names
+	 */
+	QueryHints.prototype.setTableFields = function(table, fields) {
+		FIELDS[table.toLowerCase()] = fields;
+	};
+
+	/**
+	 * Set tables available to hints
+	 * @param Array<string> tables array of table names
+	 */
+	QueryHints.prototype.setTables = function(tables) {
+		TABLES = [];
+		LAST_USED_TABLES = [];
+		for(var i=0,il=(tables||[]).length, t;i<il;i++){
+			t = tables[i];
+			TABLES.push(t);
+		}
+	};
+
+	/**
+	 * Set reference available to hints
+	 * @param Array<object> {name: 'Func Name', desc: 'Description'} refArray Array of objects defining 'name' and 'desc' for available reference to the selected engine
+	 */
+	QueryHints.prototype.setRefecende = function(refArray) {
+		REFERENCES = refArray || [];
+	};
 
     /**
      *
@@ -67,11 +105,14 @@ define(function (require, exports, module) {
         this.editor = editor;
         var cursor = this.editor.getCursorPos(),
         	lineBeginning = {line:cursor.line,ch:0},
+			totalText = this.editor.document.getText(),
         	textBeforeCursor = this.editor.document.getRange(lineBeginning, cursor);
 
-		if (textBeforeCursor === false || textBeforeCursor === "" ||
+		if (totalText !== false && totalText.match(this.tableCommandDefinition) || (textBeforeCursor !== false && textBeforeCursor !== "" && (
 			textBeforeCursor.match(this.commandReg) ||
-			textBeforeCursor.match(this.beforeTableWords)) {
+			textBeforeCursor.match(this.beforeStopReg) ||
+			textBeforeCursor.match(this.queryWordsReg) ||
+			textBeforeCursor.match(this.beforeTableWords)))) {
 			return true;
 		}
 
@@ -104,54 +145,182 @@ define(function (require, exports, module) {
     QueryHints.prototype.getHints = function (implicitChar) {
         var cursor = this.editor.getCursorPos(),
         	lineBeginning = {line:cursor.line,ch:0},
+			textTillCursor = this.editor.document.getRange({line: 0, ch: 0}, cursor),
+			lastEnd = textTillCursor.lastIndexOf(";"),
+			curSqlBlock = lastEnd !== -1 ? textTillCursor.substr(lastEnd+1) : textTillCursor,
+			textAfterCursor = this.editor.document.getRange(cursor),
         	textBeforeCursor = this.editor.document.getRange(lineBeginning, cursor),
-        	hintList = [];
+			wordBeforeCursor,
+        	hintList = [],
+			selected = -1,
+			regEx = this.	tableCommandDefinition,
+			tables_used = [],
+			usingTableCols = false,
+			cmd,
+			lastWord,
+			doRef = true, doFields = true, doCommands = true, doTables = true, doQueryWords = true,
+			doCommandsTargerts = true,
+			c, i,
+			j=0,jl=0,h;
 
-		textBeforeCursor = textBeforeCursor.replace(/[ \s]/gi, '');
-        var symbolBeforeCursorArray = textBeforeCursor.match(this.currentTokenDefinition),
-			c, i;
 
-		console.log("TextBefore:" + textBeforeCursor);
-		console.log("symbolBefore:" + symbolBeforeCursorArray);
+		lastEnd = textAfterCursor.indexOf(";");
+		textAfterCursor = lastEnd > 0 ? textAfterCursor.substr(0, lastEnd) : textAfterCursor;
+		curSqlBlock += ' ' + textAfterCursor;
 
-		if (textBeforeCursor === false || textBeforeCursor === "") {
-			for(i in COMMANDS){
-				c = COMMANDS[i];
-				if(c.indexOf(symbolBeforeCursorArray) > -1){
-					hintList.push(c);
-				}
-			}
+		wordBeforeCursor = textBeforeCursor.split(' ');
+		if ( wordBeforeCursor.length > 1 ) {
+			lastWord = wordBeforeCursor[wordBeforeCursor.length-2];
+			wordBeforeCursor = wordBeforeCursor[wordBeforeCursor.length-1];
+			wordBeforeCursor = wordBeforeCursor.replace(/[\[\]`]*/, "");
 		}
-		else if ( textBeforeCursor.match(this.commandReg) ) {
-			for(i in COMMANDS_TARGET){
-				c = COMMANDS_TARGET[i];
-				if(c.indexOf(symbolBeforeCursorArray) > -1){
-					hintList.push(c);
-				}
-			}
-		}
-		/*
-		else if ( textBeforeCursor.match(this.beforeFuncSymbos)) {
-			for(var j in SqlRef){
-				c = SqlRef[j];
-				if(c.name.indexOf(symbolBeforeCursorArray) > -1){
-					hintList.push(c.name);
-				}
-			}
-		}
-		*/
 		else {
-			for(i in COMMANDS){
-				c = COMMANDS[i];
-				if(c.indexOf(symbolBeforeCursorArray) > -1){
-					hintList.push(c);
+			wordBeforeCursor = wordBeforeCursor[0];
+			lastWord = false;
+		}
+
+		if ( this.beforeStopReg.exec(wordBeforeCursor.toUpperCase())) {
+			return {hints: [] };
+		}
+
+		console.log("Last Word: " + lastWord + " ; wordBeforeCursor " + wordBeforeCursor);
+
+		if ( doCommands && this.commandReg.exec(wordBeforeCursor) ) {
+			doCommands = false;
+			doCommandsTargerts = true;
+			doFields = false;
+			doRef = false;
+			doQueryWords = false;
+			doTables = false;
+		}
+
+		if ( doTables &&  this.beforeTableReg.exec(wordBeforeCursor)) {
+			doTables = true;
+			doRef =false;
+			doFields = false;
+			doCommands = false;
+			doCommandsTargerts = false;
+			doQueryWords = false;
+		}
+
+		if ( doCommands && this.isInSelectReg.exec(curSqlBlock) ) {
+			doCommands = false;
+		}
+
+		if ( doFields ) {
+			var result;
+			while((result = regEx.exec(curSqlBlock)) !== null) {
+			  cmd = {
+				cmd: result[1],
+				table: result[2],
+				alias: result.length === 4 ? result[3] : (result.length === 5 ? result[4] : result[2])
+				};
+				if ( tables_used.indexOf ( cmd.table ) === -1 ) {
+					tables_used.push(cmd);
+					// Load Field from DB if isn't cached
+					if (FIELDS[cmd.table.toLowerCase()] === undefined) {
+						this.loadTableField(cmd.table);
+					}
+				}
+			}
+			for(var k=0,kl=tables_used.length,tm;k<kl;k++) {
+				cmd = tables_used[k];
+
+				// if using alias or table name
+				if (wordBeforeCursor.indexOf(cmd.alias+".") === 0 || wordBeforeCursor.toLowerCase().indexOf(cmd.table.toLowerCase()+".") === 0) {
+					if ($.isArray(FIELDS[cmd.table.toLowerCase()])) {
+						var fs = FIELDS[cmd.table.toLowerCase()],
+							tmp = wordBeforeCursor.indexOf('.') > 0 ?
+									(wordBeforeCursor.indexOf('.') === wordBeforeCursor.length-1 ? '' :
+										(wordBeforeCursor.split('.')[1])) : wordBeforeCursor;
+
+						for(var fi=0,fl=fs.length,f;fi<fl;fi++){
+							f = fs[fi];
+							if ( tmp === '' || f.match(new RegExp(tmp, "gi"))) {
+								hintList.push(f);
+							}
+						}
+						doCommands = false;
+						doCommandsTargerts = false;
+						doTables = false;
+						doRef = false;
+						doQueryWords = false;
+						break;
+					}
 				}
 			}
 		}
+
+		if ( doCommandsTargerts ) {
+			j=0;jl=COMMANDS_TARGET.length;
+			while(j<jl) {
+				if (COMMANDS_TARGET[j].indexOf(wordBeforeCursor.toUpperCase()) === 0) {
+					hintList.push(COMMANDS_TARGET[j]);
+					selected = j;
+				}
+				j++;
+			}
+		}
+		if ( doCommands ) {
+			j=0;jl=COMMANDS.length;
+			while(j<jl) {
+				//if (HINTS[j].match(new RegExp(wordBeforeCursor, "i"))) {
+				if (COMMANDS[j].indexOf(wordBeforeCursor.toUpperCase()) === 0) {
+					hintList.push(COMMANDS[j]);
+					selected = j;
+				}
+				j++;
+			}
+		}
+
+		if ( doQueryWords ) {
+			j=0;jl=QUERY_WORDS.length;
+			while(j<jl) {
+				//if (HINTS[j].match(new RegExp(wordBeforeCursor, "i"))) {
+				if (QUERY_WORDS[j].indexOf(wordBeforeCursor.toUpperCase()) === 0) {
+					hintList.push(QUERY_WORDS[j]);
+					selected = j;
+				}
+				j++;
+			}
+		}
+		if ( doRef ) {
+			j=0;jl=REFERENCES.length;
+			while(j<jl) {
+				//if (HINTS[j].match(new RegExp(wordBeforeCursor, "i"))) {
+				if (REFERENCES[j].name.toUpperCase().indexOf(wordBeforeCursor.toUpperCase()) === 0) {
+					hintList.push($('<li><label>'+REFERENCES[j].name+'</label><span>' + REFERENCES[j].desc + '</span></li>'));
+					selected = j;
+				}
+				j++;
+			}
+		}
+
+		if ( doTables ) {
+			j=0;jl=TABLES.length;
+			while(j<jl) {
+				//if (HINTS[j].match(new RegExp(wordBeforeCursor, "i"))) {
+				var tname = TABLES[j].toLowerCase();
+				if (tname.indexOf(wordBeforeCursor.toLowerCase()) === 0) {
+					hintList.push(TABLES[j]);
+				}
+				else if (hintList.length < 2 && tname !== undefined && FIELDS[tname] !== undefined && FIELDS[tname].length > 0) {
+					for(var w=0,wl=FIELDS[tname].length, wf;w<wl;w++) {
+						wf = FIELDS[tname][w];
+						if (wordBeforeCursor === "" || wordBeforeCursor === "." || wf.toLowerCase().indexOf(wordBeforeCursor.toLowerCase()) === 0) {
+							hintList.push(wf);
+						}
+					}
+				}
+				j++;
+			}
+		}
+
+		if ( selected === -1 ) selected = 0;
 
         return {
             hints: hintList,
-            match: hintList[0],
+            match: hintList[selected],
             selectInitial: true,
             handleWideResults: false
         };
@@ -171,10 +340,12 @@ define(function (require, exports, module) {
         var cursor = this.editor.getCursorPos(),
         	lineBeginning = {line:cursor.line,ch:0},
         	textBeforeCursor = this.editor.document.getRange(lineBeginning, cursor),
-        	indexOfTheSymbol = textBeforeCursor.search(this.currentTokenDefinition),
+        	indexOfTheSymbol = textBeforeCursor.search(/[a-zA-Z0-9_]+[/s/t \.]*$/),
         	replaceStart = {line:cursor.line,ch:indexOfTheSymbol};
 
-        if(indexOfTheSymbol == -1) return false;
+        if(indexOfTheSymbol == -1)  return false;
+
+		hint = typeof hint === 'string' ? hint : hint.children('label').text();
 
         this.editor.document.replaceRange(hint, replaceStart, cursor);
 

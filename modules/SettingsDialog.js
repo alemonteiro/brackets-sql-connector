@@ -59,8 +59,29 @@ define(function (require, exports) {
             database: '',
             confirmModifications: true,
             saveModifications: true,
-            modifications: []
+            modifications: [],
+			instanceName: undefined,
+			trustedConnection: false
         };
+    }
+
+    /**
+     * Update screen server list
+     * @param {object} serverList array of servers
+     */
+    function updateList(selected_id) {
+        var serverList = dataStorage.getSortedServerArray(),
+			html = '', i =0,il=serverList.length, id, s;
+
+        for (;i<il;i++) {
+			s = serverList[i];
+			id = s.__id;
+            html += '<li data-id="' + id + '"' + (id == selected_id ? ' class="selected" ' : '') + '>' +
+                s.name +
+                '<a href="#" class="close">x</a>' +
+                '</li>';
+        }
+        $("#brackets-sql-connector-server-list").html(html);
     }
 
     /**
@@ -90,22 +111,7 @@ define(function (require, exports) {
 
         dataStorage.set('server_list', serverList);
 
-        updateList(serverList);
-    }
-
-    /**
-     * Update screen server list
-     * @param {object} serverList array of servers
-     */
-    function updateList(serverList) {
-        var html = '';
-        for (var id in serverList.servers) {
-            html += '<li data-id="' + id + '"' + (id == serverList.selected_id ? ' class="selected" ' : '') + '>' +
-                serverList.servers[id].name +
-                '<a href="#" class="close">x</a>' +
-                '</li>';
-        }
-        $("#brackets-sql-connector-server-list").html(html);
+        updateList(serverList.selected_id);
     }
 
     /**
@@ -125,11 +131,12 @@ define(function (require, exports) {
             password: $('.input-password', $dialog).val(),
             database: $('.input-database', $dialog).val(),
             confirmModifications: $('.input-confirm-modifications', $dialog).is(':checked'),
-            saveModifications: $('.input-save-modifications', $dialog).is(':checked')
+            saveModifications: $('.input-save-modifications', $dialog).is(':checked'),
+			trustedConnection: $('.input-trusted-connection', $dialog).is(':checked'),
+			instanceName: $('.input-instance-name', $dialog).val()
         };
     }
 
-    
     /**
      * Resets form to new insertion
      */
@@ -144,6 +151,8 @@ define(function (require, exports) {
         $('.input-port', $dialog).val(engines.mysql.port);
         $('.input-confirm-modifications', $dialog).prop('checked', true);
         $('.input-save-modifications', $dialog).prop('checked', false);
+        $('.input-trusted-connection', $dialog).prop('checked', false);
+        $('.input-instance-name', $dialog).val('');
     }
 
     /**
@@ -170,6 +179,17 @@ define(function (require, exports) {
 
         $('.input-confirm-modifications', $dialog).prop('checked', serverInfo.confirmModifications!==true);
         $('.input-save-modifications', $dialog).prop('checked', serverInfo.saveModifications===true);
+
+		if ( serverInfo.engine === 'mssql' ) {
+        	$('.input-instance-name', $dialog).val(serverInfo.instanceName);
+			$('.input-trusted-connection', $dialog).prop('checked', serverInfo.trustedConnection===true);
+			$('div.ms-only', $dialog).show();
+		}
+		else {
+        	$('.input-instance-name', $dialog).val('');
+			$('.input-trusted-connection', $dialog).prop('checked', false);
+			$('div.ms-only', $dialog).hide();
+		}
 
         if (serverInfo.confirmModifications !== true) {
 
@@ -290,14 +310,21 @@ define(function (require, exports) {
 
         fillForm(selectedServer);
 
-        updateList(serverList);
+        updateList(serverList.selected_id);
 
         // manually handle ESC Key and buttons because of autoDismiss = false
         $(dialog.getElement())
             .on('change', '.input-engine', function (evt) {
+				var eng = $(this).val(), $d = $(dialog.getElement());
                 if (isNewObject) {
-                    $('.input-port', $(dialog.getElement())).val(engines[$(this).val()].port);
+                    $('.input-port', $d).val(engines[eng].port);
                 }
+				if ( eng === 'mssql' ) {
+					$('.ms-only', $d).show();
+				}
+				else {
+					$('.ms-only', $d).hide();
+				}
             })
             .off('keyup')
             .on('keyup', function (evt) {

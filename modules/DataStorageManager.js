@@ -61,6 +61,21 @@ define( function( require, exports, module ) {
 		return serverInfo;
     }
 
+	function getSortedServerArray() {
+        var serverInfo = get('server_list'), arr = [];
+		if ( serverInfo === undefined || serverInfo === false || serverInfo === null || serverInfo === "" ) {
+			return arr;
+		}
+		for(var s in serverInfo.servers) {
+			arr.push(serverInfo.servers[s]);
+		}
+		return arr.sort(function(a, b) {
+			if ( a.name === b.name ) return 0;
+			if (a.name > b.name) return 1;
+			return -1;
+		});
+	}
+
     function saveSettings(cfg) {
         set('server_list', cfg);
     }
@@ -82,6 +97,7 @@ define( function( require, exports, module ) {
 
     function setCurrentServer(serverId) {
         var cfg = getSettings();
+
 		if ( !cfg ) return false;
         if ( serverId === false || serverId === undefined || cfg.servers[serverId] === undefined) {
 			cfg.selected_id = 0;
@@ -97,10 +113,22 @@ define( function( require, exports, module ) {
         return true;
     }
 
+	function disconnectAll() {
+		var cfg = getSettings();
+		if ( !cfg ) return false;
+		cfg.selected_id = 0;
+		for(var s in cfg.servers) {
+			cfg.servers[s].__connection_id = 0;
+		}
+		saveSettings(cfg);
+	}
+
     exports.set = set;
     exports.get = get;
     exports.getSettings =  getSettings;
     exports.saveSettings =saveSettings;
     exports.getServer =  getServer;
     exports.setCurrentServer = setCurrentServer;
+	exports.disconnectAll = disconnectAll;
+	exports.getSortedServerArray = getSortedServerArray;
 });
