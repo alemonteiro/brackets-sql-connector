@@ -68,6 +68,9 @@ a#brackets-sql-connector-icon.installing {
 .brackets-sql-connector-server-config-form .field-container {
     margin-bottom: 7px;
 }
+.brackets-sql-connector-server-config-form .field-container.ms-only {
+	display: none;
+}
 
 .brackets-sql-connector-server-config-form input, .brackets-sql-connector-server-config-form select {
     margin-left: 105px;
@@ -146,6 +149,12 @@ li.sub-anchor {
     margin-top: 7px;
 }
 
+
+#brackets-sql-connector-compare-dialog {
+ 	width: 750px;
+	min-height: 540px;
+}
+
 #brackets-sql-connector-server-list-dialog { width: 750px; }
 #brackets-sql-connector-server-list {
 	background: #333;
@@ -192,6 +201,30 @@ button.btn-server-setup > b {
 	font-weight: bold;
 	/*color: #FFF;*/
 }
+
+.brackets-sql-connector-compare-form .panel {
+	padding: 10px;
+}
+
+.brackets-sql-connector-compare-form ul {
+	list-style: none;
+}
+.brackets-sql-connector-compare-form li.not-found label {
+	text-decoration: line-through;
+}
+.brackets-sql-connector-compare-form li.not-match label {
+	font-weight: bold;
+	font-style: italic;
+}
+
+.brackets-sql-connector-compare-form {
+	float: left;
+	width: 48%;
+}
+.brackets-sql-connector-compare-form.left {
+	margin-right: 2%;
+}
+
 .brackets-sql-connector-server-list-panel {
 	float: left;
 	width: 250px;

@@ -33,7 +33,9 @@ define(function (require, exports, module) {
 
 		// Extension basics.
 		Strings = require('modules/Strings'),
+		SqlReferences = require('modules/SqlReferences'),
 		settingsDialog = require('modules/SettingsDialog'),
+		compareDialog = require('modules/DataBaseCompare'),
 		ResultSets = require('modules/ResultSets'),
         Modifications = require('modules/SqlModifications'),
 		dataStorage = require('modules/DataStorageManager'),
@@ -60,6 +62,7 @@ define(function (require, exports, module) {
 		$indicator,
 		projectUrl,
 		$sqlConnectorIcon,
+		sqlQueryHints,
 		
         modificationRegEx = /insert|create|update|delete|modify|alter|change|remove|change|drop/gi,
 
@@ -184,6 +187,11 @@ define(function (require, exports, module) {
                 if ( ! $sqlConnectorIcon.hasClass("connected")) {
                     $sqlConnectorIcon.addClass("connected");
                 }
+
+				if ( sqlQueryHints !== undefined ) {
+					loadTables(svr);
+					sqlQueryHints.setRefecende(SqlReferences[svr.engine]);
+				}
             }
         }
 	}
@@ -197,6 +205,7 @@ define(function (require, exports, module) {
 		for(var s in cfg.servers ) {
 			if ( cfg.servers[s].__connection_id > 0 ) {
 				connId = s;
+				is_connected = true;
 				break;
 			}
 		}
@@ -309,6 +318,71 @@ define(function (require, exports, module) {
 		CommandManager.get(Cmds.TOGGLE_BROWSER_PANEL).setChecked(enabled);
 	}
 	
+	/**
+	 * Load fields from a table
+	 */
+	function loadFields(serverInfo, table, callback) {
+
+		var info = serverInfo || getCurrentServer();
+
+		_nodeDomain.exec('list_fields', info.__id, info.database, table).done(function(response) {
+			var fields = response[0],
+				rows = response[1],
+				nameProp = 'Field',
+				typeProp = 'Type',
+				fields_names = [];
+
+			for(var i=0,il=rows.length,r,n,fk,pk;i<il;i++) {
+				r=rows[i];
+				fields_names.push(r[nameProp]);
+			}
+
+			if ( sqlQueryHints !== undefined ) {
+				sqlQueryHints.setTableFields(table, fields_names);
+			}
+
+			if ( typeof callback === 'function') {
+				callback.call(callback, fields_names);
+			}
+
+		}).fail(function(err, query) {
+			ResultSets.log('List Fields Error', err, query);
+			//if ( callback ) callback.call(callback, err);
+		});
+	}
+
+	/**
+	 * Load tables from a database
+	 */
+	function loadTables(serverInfo, callback) {
+
+		var info = serverInfo || getCurrentServer();
+
+		_nodeDomain.exec('list_tables', info.__id, info.database).done(function(response) {
+			var fields = response[0],
+				rows = response[1],
+				tables_names = [],
+				f = fields[0];
+				for(var i=0,il=rows.length,r,n;i<il;i++) {
+					r=rows[i];
+					n = r[f.name || f.Field];
+					tables_names.push(n);
+				}
+
+			if ( sqlQueryHints !== undefined ) {
+				sqlQueryHints.setTables(tables_names);
+			}
+
+			if ( typeof callback === 'function') {
+				callback.call(callback, tables_names);
+			}
+
+		}).fail(function(err, query) {
+			ResultSets.log('Load Tables Error', err, query);
+			//if ( callback ) callback.call(callback, err);
+		});
+	}
+
 	/** 
 	* List table fields
 	*/
@@ -320,7 +394,8 @@ define(function (require, exports, module) {
 			_nodeDomain.exec('list_foreign_keys', serverInfo.__id, table).done(function(response2)  {
 				var fks = response2[1],
                     nameProp = 'Field',
-                    typeProp = 'Type';
+                    typeProp = 'Type',
+					fields_names = [];
                 if ( serverInfo.engine === "postgresql" ) {
                     nameProp = 'field';
                     typeProp = 'type';
@@ -340,6 +415,8 @@ define(function (require, exports, module) {
 						}
 						html += '<li data-name="'+r[nameProp]+'" data-type="'+r[typeProp]+'" class="field' + (fk !== false ? ' fk': '') + (pk?' pk':'') + '">' +
 									'<label>'+r[nameProp]+'<span class="data-type">' + r[typeProp] + '<span></label></li>';
+
+						fields_names.push(r[nameProp]);
 					}
 					return html;
 				}());
@@ -348,6 +425,10 @@ define(function (require, exports, module) {
                 $li.append('<ul class="brackets-sql-connetor-browser-list-fields">' + html + '</ul>')
                     .removeClass("loading")
                     .addClass("loaded");
+
+				if ( sqlQueryHints !== undefined ) {
+					sqlQueryHints.setTableFields(table, fields_names);
+				}
 
 			 }).fail(function(err) {
 				ResultSets.log('List Fields Error', err);
@@ -504,17 +585,21 @@ define(function (require, exports, module) {
 		_nodeDomain.exec('list_tables', serverInfo.__id, serverInfo.database).done(function(response){
 			var fields = response[0], 
 				rows = response[1],
+				tables_names = [],
 				tables = (function() {
 					var html  = '', f = fields[0];
 					for(var i=0,il=rows.length,r,n;i<il;i++) {
 						r=rows[i];
 						n = r[f.name || f.Field];
+						tables_names.push(n);
 						html += '<li data=type="Table" data-name="'+n+'" class="closed"><label>'+n+'</label></li>';
 					}
 					return html;
 				}());
 			$li.removeClass('loading').addClass('loaded');
 			
+			if ( sqlQueryHints !== undefined ) sqlQueryHints.setTables(tables_names);
+
 			$("ul.brackets-sql-connector-list-tables", $li).html(tables);
 
             $li
@@ -560,11 +645,11 @@ define(function (require, exports, module) {
 		ResultSets.log(Strings.DISCONNECTING, label);
 		_nodeDomain.exec('disconnect', serverInfo.__id).done(function() {
 			ResultSets.log(Strings.DISCONNECTED, label);
-			
-            clearModificationsUI();
+
 			if ( updateStatus !== false ) {
 				updateServerStatus(serverInfo.__id, 0);
 			}
+            clearModificationsUI();
 			if ( serverInfo.__id == _current_server_id ) {
 				if ( ! hasActiveConnection() ) {
 					setSelectedServer(false);	
@@ -595,19 +680,14 @@ define(function (require, exports, module) {
 	function disconnectAll() {
 		$('ul.connections', $browserPanel).empty();
         clearModificationsUI();
-		var info = dataStorage.getSettings();
-        if ( info ) {
-            for(var sname in info.servers) {
-                var s = info.servers[sname];
-                if ( s.__connection_id > 0) {
-                    disconnect(s, false, false, false);
-                    s.__connection_id = 0;
-                }
-            }
-            dataStorage.saveSettings(info);
-        }
-		$browserPanel.removeClass("connected");
-		Indicator.disconnected();
+
+		_nodeDomain.exec("disconnect_all").done(function(){
+			dataStorage.disconnectAll();
+			$browserPanel.removeClass("connected");
+			Indicator.disconnected();
+		}).fail(function(err) {
+			ResultSets.log(Strings.ERROR + " " + Strings.DISCONNECT_ALL, err);
+		});
 	}
 	
 	/**
@@ -615,10 +695,10 @@ define(function (require, exports, module) {
 	*/
 	function connect(serverInfo, checkStatus) {
 		
-		if ( checkStatus !== false && serverInfo.__connection_id > 0) {
+		if ( checkStatus !== false && hasActiveConnection() && serverInfo.__connection_id > 0) {
 			disconnect(serverInfo, function() {
 				connect(serverInfo, false);
-			}, false);
+			}, false, false);
 		}
 		else {
 			var label = getServerLabel(serverInfo),
@@ -626,6 +706,7 @@ define(function (require, exports, module) {
 			ResultSets.log(Strings.CONNECTING, label);
 			_nodeDomain.exec('connect', serverInfo).done(function(conId) {
 				if (conId > 0) {
+					is_connected = true;
 					ResultSets.log(Strings.CONNECTED, label);
 					
 					showServerConnection(serverInfo);
@@ -966,11 +1047,21 @@ define(function (require, exports, module) {
     }
 
 	/**
+	 * Opens dialog for database compare
+	 */
+	function compareDatabases() {
+		compareDialog.showDialog({
+			loadTables: loadTables,
+			loadFields: loadFields
+		});
+	}
+
+	/**
 	 * Show server pop up menu
 	 * @param {jQuery object} $btn 	Toogle Trigger
 	 * @param {boolean} onTop 		If it's shown above the trigger. Default: true
 	 */
-	function showServerMenu($btn, onTop){
+	function showServerMenu($btn, onTop, toLeft){
 		
 		var $ul = $("body").children("ul.brackets-sql-connector-servers-menu");
 		if ( $ul.length > 0) {
@@ -983,33 +1074,32 @@ define(function (require, exports, module) {
 			htmlNotConnected = '',
 			htmlSetCurrent = '',
 			has_servers = false,
-			css = '';
+			css = '',
+			serverArr = dataStorage.getSortedServerArray();
 			//html = '<li data-action="none" data-id="0"><label>'+Strings.CONNECT_TO+'</label></li>';
 		
-		if ( _servers ) {
-			for(var sn in _servers.servers) {
-				var s = _servers.servers[sn],
-					l = getServerLabel(s),
-					isconn = s.__connection_id > 0,
-					li = '';
-				if ( l ) {
-					li += '<li data-action="'+(isconn ? "disconnect" : "connect")+'" data-id="'+sn+'" class="'+ (isconn ? 'connected' : '') +'">' +
-								'<a href="#">'+l+'</a></li>';
-					if ( isconn ) {
-						htmlConnected += li;
-						if ( parseInt(s.__id) != parseInt(_current_server_id) ) {
-							htmlSetCurrent += '<li data-action="set-active" data-id="'+sn+'" class="'+ (isconn ? 'connected' : '') +'">' +
-								'<a href="#">'+l+'</a></li>';
-						}
+		for(var i=0,il=serverArr.length;i<il;i++) {
+			var s = serverArr[i],
+				l = getServerLabel(s),
+				isconn = s.__connection_id > 0,
+				li = '';
+			if ( l ) {
+				li += '<li data-action="'+(isconn ? "disconnect" : "connect")+'" data-id="'+s.__id+'" class="'+ (isconn ? 'connected' : '') +'">' +
+							'<a href="#">'+l+'</a></li>';
+				if ( isconn ) {
+					htmlConnected += li;
+					if ( parseInt(s.__id) != parseInt(_current_server_id) ) {
+						htmlSetCurrent += '<li data-action="set-active" data-id="'+s.__id+'" class="'+ (isconn ? 'connected' : '') +'">' +
+							'<a href="#">'+l+'</a></li>';
 					}
-					else {
-						htmlNotConnected += li; 
-					}
-					has_servers = true;
 				}
+				else {
+					htmlNotConnected += li;
+				}
+				has_servers = true;
 			}
 		}
-				
+
 		if ( has_servers ) { css += ' has-servers'; }
 		else { css += ' no-servers'; }
 		
@@ -1056,7 +1146,8 @@ define(function (require, exports, module) {
 			else if (action === "set-active") {
 				setSelectedServer(id, false);
 			}
-			else if (action === "execute-file" ) {	CommandManager.execute(Cmds.EXECUTE_CURRENT_FILE);
+			else if (action === "execute-file" ) {
+				CommandManager.execute(Cmds.EXECUTE_CURRENT_FILE);
 			}
 			else if (action === "view-log" ) {
 				CommandManager.execute(Cmds.VIEW_LOG);
@@ -1067,6 +1158,9 @@ define(function (require, exports, module) {
 			else if (action === 'execute-selection') {
 				CommandManager.execute(Cmds.EXECUTE_CURRENT);
 			}
+			else if (action === 'db-compare') {
+				compareDatabases();
+			}
 			else if (action === 'new-connection') {
 				//CommandManager.execute(Cmds.CONNECTIONS);
 				showSettings();
@@ -1074,7 +1168,8 @@ define(function (require, exports, module) {
 			else if (action === 'toggle-result-panel') {
 				CommandManager.execute(Cmds.TOGGLE_RESULT_PANEL);
 			}
-			else if (action === 'toggle-browser-panel') {	CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
+			else if (action === 'toggle-browser-panel') {
+				CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
 			}
 			else if (action === "connect" && id > 0 ) {
 				setSelectedServer(id, true);
@@ -1114,10 +1209,16 @@ define(function (require, exports, module) {
 		})
         .focus();
 		
-		var off = $btn.offset();
+		var off = $btn.offset(),
+			left = (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px';
+
+		if ( toLeft === true ) {
+			left = (off.left - $ul.width() ) + 'px';
+		}
+
 		if ( onTop !== false ) {
 			$ul.css({
-				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
+				left: left,
 				top: 'auto',
 				right: 'auto',
 				bottom: ($("body").height() - off.top + 5) + 'px',
@@ -1126,7 +1227,7 @@ define(function (require, exports, module) {
 		}
 		else {
 			$ul.css({
-				left: (off.left - ($ul.width()/2) + ($btn.width()/2) ) + 'px',
+				left: left,
 				top: (off.top + 20) + 'px',
 				right: 'auto',
 				bottom: 'auto',
@@ -1178,7 +1279,7 @@ define(function (require, exports, module) {
 	*	Register extension commands.
 	*/
 	function registerCommands() {
-		//CommandManager.register(Strings.EXTENSION_NAME, Cmds.ENABLE, toggleExtension);
+		CommandManager.register(Strings.EXTENSION_NAME, Cmds.ENABLE, toggleExtension);
 		CommandManager.register(Strings.EXECUTE_CURRENT, Cmds.EXECUTE_CURRENT, executeCurrent);
 		CommandManager.register(Strings.EXECUTE_CURRENT_FILE, Cmds.EXECUTE_CURRENT_FILE, executeFile);
 		CommandManager.register(Strings.MANAGE_SERVERS, Cmds.CONNECTIONS, showSettings);
@@ -1192,6 +1293,7 @@ define(function (require, exports, module) {
         CommandManager.register(Strings.CLEAR_MODIFICATIONS, Cmds.CLEAR_MODIFICATIONS, clearModifications);
         CommandManager.register(Strings.CLEAR_LOG, Cmds.CLEAR_LOG, clearLog);
         CommandManager.register(Strings.REFRESH, Cmds.REFRESH, menuRefresh);
+        CommandManager.register(Strings.DB_COMPARE_TITLE, Cmds.COMPARE_DB, compareDatabases);
 
         ctxMenu = Menus.registerContextMenu('alemonteiro.bracketsSqlConnector.browserPanelContextMenu');
         ctxMenu.addMenuItem(Cmds.REFRESH);
@@ -1316,6 +1418,9 @@ define(function (require, exports, module) {
 		// Add listener for toolbar icon..
 		$sqlConnectorIcon.click(function () {
 			CommandManager.execute(Cmds.TOGGLE_BROWSER_PANEL);
+		})
+		.on('contextmenu', function(evt) {
+			showServerMenu($(this), false, true);
 		});
 
         // Listener for removing modifications
@@ -1502,8 +1607,11 @@ define(function (require, exports, module) {
 			});
 
 		if ( preferences.get('sqlHints') === true ) {
-			var hq = new QueryHints.QueryHints();
-        	CodeHintManager.registerHintProvider(hq, ["sql"], 1);
+			sqlQueryHints = new QueryHints.QueryHints();
+			sqlQueryHints.setLoadTableFieldFunc(function(table) {
+				loadFields(undefined, table);
+			});
+        	CodeHintManager.registerHintProvider(sqlQueryHints, ["sql"], 1);
 		}
 
 		// Setup listeners.
