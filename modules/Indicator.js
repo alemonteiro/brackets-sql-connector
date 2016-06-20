@@ -34,7 +34,7 @@ define( function( require, exports, module ) {
 		},
 
 		setText = function(text) {
-			$('.label', $indicator).html(text);
+			$('.indicator-label', $indicator).html(text);
 			return this;
 		},
 

@@ -433,7 +433,7 @@ button.btn-server-setup > b {
 	display: none;
 }
 
-.brackets-sql-connector-status-indicator .label {
+.brackets-sql-connector-status-indicator .indicator-label {
 	vertical-align: top;
 	height: 25px;
 	line-height: 25px;
