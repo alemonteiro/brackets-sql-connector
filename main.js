@@ -96,6 +96,20 @@ define(function (require, exports, module) {
 	ExtensionUtils.loadStyleSheet(module, 'sql-connector.css');
 	
 	/**
+	 * Sort array of objects by property
+	 * @param   {Array}    arr  Array to be sorted
+	 * @param   {String} prop Property name to sort upon
+	 * @returns {Array} Sorted array
+	 */
+	function array_sortBy(arr, prop) {
+		return arr.sort(function(a, b) {
+			if ( a[prop] === b[prop] ) return 0;
+			if (a[prop] > b[prop]) return 1;
+			return -1;
+		});
+	}
+
+	/**
 	 * Get saved server list 
 	 */
 	function getSavedConfig() {
@@ -587,8 +601,10 @@ define(function (require, exports, module) {
 				rows = response[1],
 				tables_names = [],
 				tables = (function() {
-					var html  = '', f = fields[0];
-					for(var i=0,il=rows.length,r,n;i<il;i++) {
+					var html  = '', f = fields[0],
+						sorted = array_sortBy(rows, f.name || f.Field);
+
+					for(var i=0,il=sorted.length,r,n;i<il;i++) {
 						r=rows[i];
 						n = r[f.name || f.Field];
 						tables_names.push(n);

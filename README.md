@@ -3,19 +3,63 @@ brackets-sql-connector
 
 Connect to your databases directly from brackets. Browser the schema with an right panel and be able to execute sql directly from the editor.
 
-# NPM Install #
+## Install
 
-If you get errors in the installation it's probably related to the NPM install. Maybe you don't have Node Package Manager installed or maybe the extension is not being able to access it properly.
+### Requirements ###
 
-The workaround is to get the modules from the command line.
+* NPM -> https://nodejs.org/en/download/ (Make sure you install WITH Node Package Manager)
 
-Use Brackets menu  *`Help -> Show Extension Folder`*, go to *`brackets-sql-connector/node`* folder and open it on the prompt/command line.
+* Npm is used to install the dependencies required to connect to each sql engine. This was added because of problems with large files on the brackets extension registry.
 
-On the prompt execute *`npm install`*
+#### From Git
+
+Use `Help -> Show Extension Folder` to go to the extensions dir, open the prompt there and run
+
+```
+git clone http://github.com/alemonteiro/brackets-sql-connector
+```
+Then go to `brackets-sql-connector/node` and run
+```
+npm install
+```
+
+#### From Brackets
+
+Use the Menu  `File -> Extension Manager` and search for SQL Connector or SQL Browser and install it.
+
+If you have NPM installed the extension will try to auto install the dependencies, you should see the status idication on the bottom panel.
+
+If the modules aren't installed automatically you need to get them manually. Use Brackets menu  *`Help -> Show Extension Folder`*, go to *`brackets-sql-connector/node`* folder and open it on the prompt/command line and execute
+```
+npm install
+```
 
 You should see the modules being installed and will be good to go =)
 
-If it still doesn't work, check the Full Package install bellow.
+## Usage ##
+
+* Right click on the DataBase icon on the tool bar(right) to open the menu, left click opens the Browser Panel
+* Left click on the connection icon on the satus bar(bottom) to open the menu
+
+* Use the menu to manage and connect to servers
+* Many connections can be active at once, they are shown on the menu and on the Browser Panel if open
+* Only one connection can be set to recieve commands from the main editors, this 'editor connection' will be shown on the status bar and can be changed on the Menu -> Set Editor Connection (this is only shown if two or more connections are up)
+
+## Executing from editor ##
+
+* The connection shown on the status bar with an green icon is able to accept commands from the editor.
+* Brackets Menu View -> Execute Current Document or Current Selection
+* Extension Menu -> Execute Current Selection (Only shown when there's selected text)
+* Extension Menu -> Execute Document (Only shown when the file is .sql)
+
+#### Shortcuts: 
+	* (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
+
+* When you hit Alt-Enter 
+		1. If there's any text select it will try to run it (in any type of file)
+		2. If no text is select but the active document is an .sql all content will be executed
+		
+#### Manage Servers
 
 ## Features ##
 
@@ -32,48 +76,12 @@ If it still doesn't work, check the Full Package install bellow.
 * Connections are not per project. They are even maintained connected on project switch.
 * Auto Install of dependecies
 
-## Getting Started ##
-
-### Requirements ###
-
-* NPM -> https://nodejs.org/en/download/ (Make sure you install WITH Node Package Manager)
-
-* Node Package Manager is required since version 0.5.4!! Npm is used to install the dependencies required to connect to each sql engine. This was added because of problems with large files on the brackets extension registry.
-
-### Default Install ###
-
-1. On Brackets Open Extension Manager by clicking the building-blocky icon on the right side of Brackets;
-2. Search for SQL Browser or SQL Connector;
-3. Click Install;
-4. Click the SQL Connector icon (database with gears) on the right toolbar to open the browser panel;
-5. Wait the Install process on the status bar until it's says 'Not Connected'
-
-* To open browser panel click on the Database With Gear icon on the right tool bar
-* To open the quick menu 'right click' on the database icon or click on the status bar indicator
-
-### Auto Installation of Dependencies ###
-
-> Did the automatic installation of dependencies when you first start. At the time of installation commands are not available, the status bar shows "Installing...", the plugin icon is highlighted in orange.
-
-Brackets registry editor sometimes doesn't handle large uploads and I wasn't able to update the version of the extension.
-
-So, if you have NPM installed we try to install the required modules automatic for you =)
-
 ### Alternative Install - Full Package ###
 
 If still having problems with NPM install you can download the full package and extract it to the brackects extension folder.
 
 Full package download: http://alemonteiro.com.br/downloads/brackets-sql-connector.zip
 
-## Executing from editor ##
-
-#### Shortcuts: 
-	* (Ctrl-Alt-Enter / Cmd-Alt-Enter) execute current text selection or current active document;
-
-* On the bottom panel should be a green connection icon with yout server name in front of it.
-* When you hit Alt-Enter 
-		1. If there's any text select it will try to run it (in any type of file)
-		2. If no text is select then only SQL Documents will be executed
   
 ## Stored Modifications ##
 
@@ -104,13 +112,6 @@ If enabled hinting will cache the sql reference available for the engine (curren
  
  You must connect to both servers before starting the compare.
  
-## Restrictions / Not Implemented stuff / Buggy ##
-	
-* Only one connection can be used at a time for executing editor querys. In the future it will be one per editor.
-* Only one database can be viewer per server setup. If you need multiple databases on the same server, create multiples server for now.
-* No SSL support yet
-* The Browser panel hides the second editor scroll bar. (This panel is an "fix" cause brackets doesn't have API for side panels yet).
-
 ## Contributions And Attributions ##
 
 * Those fabulous icons are given by freekpik: http://freepik.com
@@ -120,17 +121,10 @@ If enabled hinting will cache the sql reference available for the engine (curren
 
 * Auto Install by [@IgorNovozhilov](https://github.com/IgorNovozhilov)
 
-## Notes for developers ##
-
-This repo does not include required node modules! For extension developers, please run 
-
-npm install
-
-in the /node folder.
-
 ## TODO ##
 
 * Use pg and mssql connection pools
+* Add SSL support
 * Configurable one connection and result sets per editor
 * Interface to config default extension settings
 * Compare table fields and properties

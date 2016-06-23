@@ -4,7 +4,6 @@ module.exports = {
 	showTables: function(db) {
 		return "SELECT TABLE_NAME as [Table], TABLE_TYPE as [Type], TABLE_SCHEMA as [Schema], TABLE_CATALOG as [Catalog] FROM information_schema.tables";
 	},
-	
 	showFields: function(db, table) {
 		return ('SELECT ' +
 					"c.name as [Field], " +
@@ -23,7 +22,7 @@ module.exports = {
 						"LEFT OUTER JOIN sys.indexes i  " +
 								"ON ic.object_id = i.object_id AND ic.index_id = i.index_id " +
 				"WHERE " +
-					 " +c.object_id = OBJECT_ID('"+table+"') ");
+					 " +c.object_id = OBJECT_ID('["+table+"]') ");
 	},
 	
 	showForeignKeys: function(db, table) {
