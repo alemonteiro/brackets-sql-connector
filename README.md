@@ -45,7 +45,7 @@ You should see the modules being installed and will be good to go =)
 * Many connections can be active at once, they are shown on the menu and on the Browser Panel if open
 * Only one connection can be set to recieve commands from the main editors, this 'editor connection' will be shown on the status bar and can be changed on the Menu -> Set Editor Connection (this is only shown if two or more connections are up)
 
-## Executing from editor ##
+### Executing from editor ###
 
 * The connection shown on the status bar with an green icon is able to accept commands from the editor.
 * Brackets Menu View -> Execute Current Document or Current Selection
@@ -132,6 +132,19 @@ If enabled hinting will cache the sql reference available for the engine (curren
 * Add portuguese translation
 
 ## Release Notes ##
+
+### v 0.6.1 (not published) ###
+
+* Removed icon for the status bar indicator. The selected server name will be green if connected.
+* Add listener to context menu on status bar indicator
+* Compare now shows differences between columns names and types
+* Added export tables option on the browser context menu
+
+Code stuff
+
+* Rearrenged default SQLs queries to return js style names
+* Modified export/view funcionalities to read from pre-defined templates instead of hard-coded ones
+
 
 ### v 0.6.0 ###
 

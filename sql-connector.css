@@ -212,9 +212,10 @@ button.btn-server-setup > b {
 .brackets-sql-connector-compare-form li.not-found label {
 	text-decoration: line-through;
 }
-.brackets-sql-connector-compare-form li.not-match label {
+.brackets-sql-connector-compare-form li.not-match > label {
 	font-weight: bold;
 	font-style: italic;
+	color: #852222;
 }
 
 .brackets-sql-connector-compare-form {
@@ -320,19 +321,24 @@ button.btn-server-setup > b {
 .brackets-sql-connector-browser-server-folders > li.open > label::before {
 	background-image: url('images/folder_opem.svg');
 }
-.brackets-sql-connector-browser-server-folders > li.closed > ul { display: none; }
-.brackets-sql-connector-browser-server-folders > li.open > ul { display: block; }
+.brackets-sql-connector-browser-server-folders > li.closed > ul,
+.brackets-sql-connector-compare-form li > ul{ display: none; }
+
+.brackets-sql-connector-browser-server-folders > li.open > ul,
+li.table.open > ul { display: block; }
 
 .brackets-sql-connector-browser-server-folders > li > ul {
 	margin-left: 8px;
 }
 
-.brackets-sql-connector-list-tables > li.closed > label::before {
+.brackets-sql-connector-list-tables > li.closed > label::before,
+li.table > label::before {
 	content: " + ";
 	cursor: pointer;
 	padding-right: 0.4em; 
 }
-.brackets-sql-connector-list-tables > li.open > label::before {
+.brackets-sql-connector-list-tables > li.open > label::before,
+li.table.open > label::before {
 	content: " - ";
 	cursor: pointer;
 	padding-right: 0.4em; 
@@ -437,6 +443,13 @@ button.btn-server-setup > b {
 	vertical-align: top;
 	height: 25px;
 	line-height: 25px;
+}
+
+.connected .indicator-label {
+	color: #3bad41 !important;
+}
+.error .indicator-label {
+	color: #f74687 !important;
 }
 
 .brackets-sql-connector-status-indicator.connected.has-sql button.btn-query-execute{

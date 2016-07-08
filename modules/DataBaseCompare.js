@@ -110,21 +110,23 @@ define(function (require, exports) {
 				});
 			},
 			compareFields: function(table) {
+				//console.log('Comparing fields ' + table);
 				var li=0, llen = this.left.fields[table].length, lc,
 					ri=0, rlen = this.right.fields[table].length, rc,
 					tmp = [], full = [], i, diff = false;
 
-				if ( llen !== rlen ) {
-					diff = true;
-				}
-				else {
+				//if ( llen !== rlen ) {
+				//	diff = true;
+				//}
+				//else {
 					while(li<llen) {
 						lc = this.left.fields[table][li];
+						tmp[li] = lc.name.toLowerCase();
 						full.push({
-							name: lc.toLowerCase(),
+							name: lc.name.toLowerCase(),
 							left: {
-								name: lc.Field,
-								type: lc.Type
+								name: lc.name,
+								type: lc.type
 							},
 							right: false
 						});
@@ -133,31 +135,27 @@ define(function (require, exports) {
 
 					while(ri<rlen) {
 						rc = this.right.fields[table][ri];
-						i = tmp.indexOf(rc.Field.toLowerCase());
+						i = tmp.indexOf(rc.name.toLowerCase());
 						if ( i === -1 ) {
 							full.push({
-								name: rc.Field.toLowerCase(),
+								name: rc.name.toLowerCase(),
 								left: false,
 								right: {
-									name: lc.Field,
-									type: lc.Type
+									name: rc.name,
+									type: lc.type
 								}
 							});
 							diff = true;
 						}
 						else {
 							full[i].right = {
-								name: lc.Field,
-								type: lc.Type
+								name: lc.name,
+								type: lc.type
 							};
-
-							if ( full[i].right.name !== full[i].left.name ) {
-								diff = true;
-							}
 						}
 						ri++;
 					}
-				}
+				//}
 
 				if ( diff ) {
 					$('.brackets-sql-connector-compare-form li[data-table="'+table+'"]', $dialog).addClass("not-match");
@@ -168,6 +166,16 @@ define(function (require, exports) {
 					if ( a.name > b.name ) return 1;
 					return -1;
 				});
+
+				var html = '';
+
+				for(var j=0,jl=this.fields_comp[table].length,f;j<jl;j++) {
+					f = this.fields_comp[table][j];
+					html += '<li><label>' + f.name + '</label></li>';
+				}
+
+				$('.brackets-sql-connector-compare-form li[data-table="'+table+'"]', $dialog).append('<ul>' + html +'</ul>');
+
 			}
 		};
 
@@ -192,8 +200,8 @@ define(function (require, exports) {
 
 		for(;i<il;i++) {
 			t = servers.tables[i];
-			html_left += '<li data-table="'+t.name+'" class="'+(!t.left? "not-found" : "")+'"><label>'+t.name+'</labela></li>';
-			html_right += '<li data-table="'+t.name+'" class="'+(!t.right? "not-found" : "")+'"><label>'+t.name+'</label></li>';
+			html_left += '<li data-table="'+t.name+'" class="table '+(!t.left? "not-found" : "")+'"><label>'+t.name+'</label></li>';
+			html_right += '<li data-table="'+t.name+'" class="table '+(!t.right? "not-found" : "")+'"><label>'+t.name+'</label></li>';
 		}
 		//console.log("listing " + tables.length + ' tablies on ' + side + ' side');
 		$(".brackets-sql-connector-compare-form.left", $dialog).find('.panel').html(html_left);
@@ -201,12 +209,11 @@ define(function (require, exports) {
 
 		var lfields = function(side, table) {
 			return function(fields)	{
-				servers.setFields('left', table, fields);
+				servers.setFields(side, table, fields);
 			};
 		};
 
-		/*
-		for(;i<il;i++) {
+		for(i = 0;i<il;i++) {
 			t = servers.tables[i];
 
 			if ( t.left ) {
@@ -216,7 +223,7 @@ define(function (require, exports) {
 			if ( t.right ) {
 				servers.loadFields(servers.right.id, t.right, lfields('right', t.right));
 			}
-		}*/
+		}
 	}
 
     /**
@@ -274,12 +281,21 @@ define(function (require, exports) {
                     dialog.close();
                 }
             })
-            .off('click', 'button')
+            .off('click', '.brackets-sql-connector-compare-form li.table > label')
+			.on('click', '.brackets-sql-connector-compare-form li.table > label', function(evt) {
+				var isOpen = $(this).parent().hasClass('open'),
+					val = $(this).parent().data('table'),
+					$lis = $('.brackets-sql-connector-compare-form li.table[data-table="'+val+'"]', $(dialog.getElement()));
+
+				if ( isOpen ) $lis.removeClass('open');
+				else $lis.addClass('open');
+
+			})
+			.off('click', 'button')
             .on('click', 'button', function (evt) {
                 var buttonId = $(this).data('button-id');
                 if (buttonId === 'compare') {
 					var ids = getIds();
-					console.log('Select Ids: ' + ids.length);
 					if ( ids.length === 2 ) {
 						servers.left.id = ids[0];
 						servers.left.obj = dataStorage.getServer(ids[0], cfg);

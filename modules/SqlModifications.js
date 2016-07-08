@@ -17,7 +17,7 @@ define(function (require, exports, module) {
 
         // Mustache templates.
         modificationRowTemplate = require('text!html/tr-modification.html'),
-        SqlTemplate = require('text!sql_query/modification_command.sql'),
+        SqlTemplate = require('text!templates/generic/stored_modifications.sql'),
 
         getModificationTrHtml = function (mod) {
             return Mustache.render(modificationRowTemplate, {
@@ -123,6 +123,7 @@ define(function (require, exports, module) {
             }
             return false;
         },
+
         resetUI = function() {
             $("#brackets-sql-connector-modifications-pane tbody").empty();
         };

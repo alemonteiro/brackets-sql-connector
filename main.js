@@ -42,6 +42,7 @@ define(function (require, exports, module) {
 		Cmds = require('modules/SqlConnectorCommands'),
 		Indicator = require('modules/Indicator'),
 		QueryHints = require('modules/QueryHints'),
+		SQLTemplates = require('modules/SQLTemplates'),
 		
 		// Preferences.
 		preferences = PreferencesManager.getExtensionPrefs('alemonteiro.bracketsSqlConnector'),
@@ -300,14 +301,6 @@ define(function (require, exports, module) {
 	}
 	
 	/**
-	 * Set state of extension.
-	 */
-	function toggleBrowserPanel(enabled) {
-		enabled = enabled === undefined ? !is_browser_pane_enabled : enabled;
-		enableBrowserPanel(enabled);
-	}
-
-	/**
 	 * Initialize extension.
 	 */
 	function enableBrowserPanel(enabled) {
@@ -333,6 +326,14 @@ define(function (require, exports, module) {
 	}
 	
 	/**
+	 * Set state of extension.
+	 */
+	function toggleBrowserPanel(enabled) {
+		enabled = enabled === undefined ? !is_browser_pane_enabled : enabled;
+		enableBrowserPanel(enabled);
+	}
+
+	/**
 	 * Load fields from a table
 	 */
 	function loadFields(serverInfo, table, callback) {
@@ -344,11 +345,20 @@ define(function (require, exports, module) {
 				rows = response[1],
 				nameProp = 'Field',
 				typeProp = 'Type',
-				fields_names = [];
+				fields_names = [],
+				arrFields = [];
 
 			for(var i=0,il=rows.length,r,n,fk,pk;i<il;i++) {
 				r=rows[i];
 				fields_names.push(r[nameProp]);
+				arrFields.push({
+					name: r.name,
+					type: r.type,
+					allow_null: r.allowNull,
+					pk: (r.Key === 'PRI'),
+					ai: (r.Extra === 'autoIncrement'),
+					defaultValue: r.defaultValue
+				});
 			}
 
 			if ( sqlQueryHints !== undefined ) {
@@ -356,7 +366,7 @@ define(function (require, exports, module) {
 			}
 
 			if ( typeof callback === 'function') {
-				callback.call(callback, fields_names);
+				callback.call(callback, arrFields);
 			}
 
 		}).fail(function(err, query) {
@@ -379,7 +389,7 @@ define(function (require, exports, module) {
 				f = fields[0];
 				for(var i=0,il=rows.length,r,n;i<il;i++) {
 					r=rows[i];
-					n = r[f.name || f.Field];
+					n = r[f.name];
 					tables_names.push(n);
 				}
 
@@ -461,13 +471,13 @@ define(function (require, exports, module) {
         if ( !fields || !rows || fields.length === 0 || rows.length === 0) return '';
 		var html  = '', 
 			f = fields[nameFieldIndex||0],
-			fn = f.name||f.Field||f.field||f.Name||f.Column;
+			fn = f.name;
 		for(var i=0,il=rows.length,r,n,fk;i<il;i++) {
 			fk = false;
 			r=rows[i];
 			n = r[fn];
 
-			html += '<li data-name="'+n+'" data-type="'+(r.Type||r.type||type)+'" data-definition="'+(r.Definition||r.definition)+'" >' +
+			html += '<li data-name="'+n+'" data-type="'+(r.type||type)+'" data-definition="'+(r.definition)+'" >' +
 						'<label>'+n+'</label></li>';
 		}
 		return html;
@@ -602,13 +612,13 @@ define(function (require, exports, module) {
 				tables_names = [],
 				tables = (function() {
 					var html  = '', f = fields[0],
-						sorted = array_sortBy(rows, f.name || f.Field);
+						sorted = array_sortBy(rows, f.name);
 
 					for(var i=0,il=sorted.length,r,n;i<il;i++) {
 						r=rows[i];
-						n = r[f.name || f.Field];
+						n = r[f.name];
 						tables_names.push(n);
-						html += '<li data=type="Table" data-name="'+n+'" class="closed"><label>'+n+'</label></li>';
+						html += '<li data-type="table" data-name="'+n+'" class="closed"><label>'+n+'</label></li>';
 					}
 					return html;
 				}());
@@ -890,7 +900,7 @@ define(function (require, exports, module) {
 	}
 	
 	/**
-	If there's selected text on current editor
+	* If there's selected text on current editor
 	*/
 	function hasTextSelection() {
 		var editor = EditorManager.getActiveEditor();
@@ -962,58 +972,6 @@ define(function (require, exports, module) {
 	}
 	
     /**
-     * Simple SQL Formatting
-     * @param   {string}   str SQL Query to format
-     * @returns {string} Formatted SQL Query
-     */
-    function formatSQL(str) {
-
-        if ( str.indexOf("\n\t") > -1 ) {
-           return str;
-        }
-
-		var steps = [
-            {
-                // End of Command: Two breaks after
-                search: /;/gi,
-                replace: "$&\n\n"
-            },
-			{
-				// "Main" Words: Break before and after with one indent after
-				search: /(select |from |where |order |group |having |limit )/gi,
-				replace: "\n$&\n\t"
-			},
-			{
-				// JOINS: Break before and after with two indent before
-				search: /(inner join |right join |left join |outter join )/gi,
-				replace: "\n\t\t$&"
-			},
-			{
-				// ON: Break before and tree indent before
-				search: /( on)/gi,
-				replace: "\n\t\t\t$&"
-			},
-			{
-				// ',' not inside (): Break after with one indent after
-				search: /,(?![^\(]*\))/gi,
-				replace: "$&\n\t"
-			},
-			{
-				// AND: Break Before with one indent before
-				search: /( and)/gi,
-				replace: "\n\t$&"
-			}
-		];
-
-		for(var i=0,il=steps.length,s;i<il;i++) {
-			s = steps[i];
-			str = str.replace(s.search, s.replace);
-		}
-
-        return str;
-    }
-
-    /**
      * Creates new Untitled document or use the current selected one (replaces text)
      * @param {string} sql SQL to Show
      */
@@ -1040,11 +998,16 @@ define(function (require, exports, module) {
 				views = response[1],
                 query = "";
 
-            for(var i=0,il=views.length,v;i<il;i++) {
-                v = views[i];
-                query += "\n"+command+ ' VIEW ' + (v.Name||v.name) + " AS " + formatSQL(v.Definition||v.definition) + ";\n";
-            }
-            showSQLOnFile(query);
+			var st = SQLTemplates.getEngine(serverInfo.engine);
+			st.parse('views-export-all', {
+				 views: views
+			}, function(err, table, sql) {
+				if ( err ) {
+					ResultSets.log('Export Views Error', err);
+					return;
+				}
+            	showSQLOnFile( SQLTemplates.format(query));
+			});
 		})
 		.fail(function(err) {
 			ResultSets.log('Show Views Error', err);
@@ -1059,7 +1022,7 @@ define(function (require, exports, module) {
      * @param {string} definition SQL Definition
      */
     function exportDefinition(command, name, type, definition) {
-        showSQLOnFile("\n"+command+ " " + type + " " + name + " AS " + formatSQL(definition) + ";");
+        showSQLOnFile("\n"+command+ " " + type + " " + name + " AS " + SQLTemplates.format(definition) + ";");
     }
 
 	/**
@@ -1268,7 +1231,7 @@ define(function (require, exports, module) {
 		}
 		
 		if ( typeof def === 'string' ) {
-            def = formatSQL(def);
+            def = SQLTemplates.format(def);
 			
             showSQLOnFile(def);
 		}
@@ -1313,6 +1276,34 @@ define(function (require, exports, module) {
 
         ctxMenu = Menus.registerContextMenu('alemonteiro.bracketsSqlConnector.browserPanelContextMenu');
         ctxMenu.addMenuItem(Cmds.REFRESH);
+	}
+
+	/**
+	 * Show parsed script from a template
+	 * @param {object} serverInfo Server settings
+	 * @param {object} table      Table name
+	 */
+	function showTableTemplate(serverInfo, table, template) {
+		//var sql = 'CREATE TABLE ' + table AS;
+		loadFields(serverInfo, table, function(fields) {
+			try
+			{
+				var st = SQLTemplates.getEngine(serverInfo.engine);
+				st.parse(template, {
+					name: table,
+					fields: fields
+				}, function(err, table, sql) {
+					if ( err ) {
+						Indicator.setText('Parse error:' + err);
+						return;
+					}
+					showSQLOnFile(sql);
+				});
+			}
+			catch(err){
+				Indicator.setText('Parse error:' + err.message);
+			}
+		});
 	}
 
     /**
@@ -1363,6 +1354,16 @@ define(function (require, exports, module) {
                         '<a href="#">'+Strings.EXPORT + ' ' + Strings.VIEWS+'(' +Strings.ALTER + ')</a>' +
                     '</li>');
             }
+			else if (folder === "table" || type === "table" || folder === "tables") {
+                $ul.append(''+
+                    '<li data-action="create-table">' +
+                        '<a href="#">'+Strings.SHOW + ' ' + Strings.CREATE + ' ' + Strings.TABLE + '</a>' +
+                    '</li>');
+                $ul.append(''+
+                    '<li data-action="select-table">' +
+                        '<a href="#">'+Strings.SHOW + ' ' + Strings.SELECT + ' ' + Strings.TABLE + '</a>' +
+                    '</li>');
+			}
 
             if ( add_refresh ) {
 				$ul.append(''+
@@ -1395,6 +1396,13 @@ define(function (require, exports, module) {
                 else if (act === "export-views-alter") {
                     exportAllViews(sinfo, 'ALTER');
                 }
+				else if (act === 'create-table') {
+					showTableTemplate(sinfo, name, 'create-table');
+				}
+				else if (act === 'select-table') {
+					showTableTemplate(sinfo, name, 'select-table');
+				}
+
                 $(this).parent().remove();
 
                 if (type === 'table') {
@@ -1554,15 +1562,9 @@ define(function (require, exports, module) {
 		menu.addMenuItem(Cmds.EXECUTE_CURRENT, 'Alt-Enter');
 
 		// Setup $indicator events
-		$indicator.on('click', 'button', function (evt) {
-				var action = $(this).data("action");
-				if (action === "execute") {
-					executeCurrent();
-				}
-			})
-			.on('click', function (evt) {
-				showServerMenu($(this), undefined, evt);
-			});
+		$indicator.on('click contextmenu', function (evt) {
+			showServerMenu($(this));
+		});
 
 		// Setup UI events
 		registerUIListerner();

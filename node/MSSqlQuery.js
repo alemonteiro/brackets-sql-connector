@@ -2,17 +2,18 @@
 module.exports = {
 	
 	showTables: function(db) {
-		return "SELECT TABLE_NAME as [Table], TABLE_TYPE as [Type], TABLE_SCHEMA as [Schema], TABLE_CATALOG as [Catalog] FROM information_schema.tables";
+		return "SELECT TABLE_NAME as [name], TABLE_TYPE as [type], TABLE_SCHEMA as [schema], TABLE_CATALOG as [catalog] FROM information_schema.tables";
 	},
+
 	showFields: function(db, table) {
 		return ('SELECT ' +
-					"c.name as [Field], " +
-					"t.Name [Type], " +
-					"c.max_length [Length],  " +
-					"c.precision ,  " +
-					"c.scale ,  " +
-					"c.is_nullable,  " +
-					"[Key] = CASE WHEN ISNULL(i.is_primary_key, 0) = 0 THEN '' ELSE 'PRI' END " +
+					"c.name as [name], " +
+					"t.Name [type], " +
+					"c.max_length [length],  " +
+					"c.precision as [precision],  " +
+					"c.scale as [scale],  " +
+					"c.is_nullable as [allow_null],  " +
+					"CASE WHEN ISNULL(i.is_primary_key, 0) = 0 THEN '' ELSE 'PRI' END as [key] " +
 				"FROM   " +  
 					"sys.columns c " +
 						"INNER JOIN  sys.types t  " +
@@ -27,11 +28,11 @@ module.exports = {
 	
 	showForeignKeys: function(db, table) {
 		return ( 'SELECT ' +
-    				'[ReferencedTable] = FK.TABLE_NAME, ' +
-    				'[ReferencedField] = CU.COLUMN_NAME, ' +
-					'[Table] = PK.TABLE_NAME, ' +
-					'[Field] = PT.COLUMN_NAME, ' +
-    				'Constraint_Name = C.CONSTRAINT_NAME ' +
+    				'[referencedTable] = FK.TABLE_NAME, ' +
+    				'[referencedField] = CU.COLUMN_NAME, ' +
+					'[table] = PK.TABLE_NAME, ' +
+					'[field] = PT.COLUMN_NAME, ' +
+    				'constraintName = C.CONSTRAINT_NAME ' +
 				'FROM ' +
     				'INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS C ' +
 						'INNER JOIN INFORMATION_SCHEMA.TABLE_CONSTRAINTS FK ' +
@@ -58,22 +59,22 @@ module.exports = {
 	
 	showViews: function(db) {
 		return ("select " +
-					"[Name] = TABLE_NAME, " +
-					"[Definition] = VIEW_DEFINITION, " +
-					"[Catalog] = TABLE_CATALOG,  " +
-					"[Schema] = TABLE_SCHEMA " +
+					"[name] = TABLE_NAME, " +
+					"[definition] = VIEW_DEFINITION, " +
+					"[catalog] = TABLE_CATALOG,  " +
+					"[schema] = TABLE_SCHEMA " +
 				"FROM " + db + ".information_schema.views");
 	},
 	
 	showRoutines: function(db, type) {
 		return ( 'select ' +
-					'[Name] = ROUTINE_NAME, '+
-					'[Definition] = ROUTINE_DEFINITION, '+
-					'[Catalog] = SPECIFIC_CATALOG, '+
-					'[Schema] = SPECIFIC_SCHEMA,  '+
-					'[Created] = CREATED, '+
-					'[LastAltered] = LAST_ALTERED, '+
-					'[Type] = routine_type '+
+					'[name] = ROUTINE_NAME, '+
+					'[definition] = ROUTINE_DEFINITION, '+
+					'[catalog] = SPECIFIC_CATALOG, '+
+					'[schema] = SPECIFIC_SCHEMA,  '+
+					'[created] = CREATED, '+
+					'[lastAltered] = LAST_ALTERED, '+
+					'[type] = routine_type '+
 			'FROM ' + db + '.information_schema.routines  '+
 			'WHERE '+
 			 	"routine_type = '" + type + "' " + 

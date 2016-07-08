@@ -65,6 +65,7 @@ define( {
     DROP: "Drop",
     MODIFY: "Modify",
 	ACTION: "Action",
+	SELECT: "Select",
 
     CLEAR_MODIFICATIONS_CONFIRMATION: "Are you sure you want to clear {{modifications}}?", // {{modifications}} will holder either the length of modifications being cleared or the query when removing one
     CLEAR_LOG: "Clear Log",
