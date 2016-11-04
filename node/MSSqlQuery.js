@@ -12,7 +12,8 @@ module.exports = {
 					"c.max_length [length],  " +
 					"c.precision as [precision],  " +
 					"c.scale as [scale],  " +
-					"c.is_nullable as [allow_null],  " +
+					"c.is_nullable as [allowNull],  " +
+					"CASE WHEN ISNULL(i.is_primary_key, 0) = 0 THEN 0 ELSE 1 END as [primaryKey], " +
 					"CASE WHEN ISNULL(i.is_primary_key, 0) = 0 THEN '' ELSE 'PRI' END as [key] " +
 				"FROM   " +  
 					"sys.columns c " +

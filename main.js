@@ -354,9 +354,9 @@ define(function (require, exports, module) {
 				arrFields.push({
 					name: r.name,
 					type: r.type,
-					allow_null: r.allowNull,
-					pk: (r.Key === 'PRI'),
-					ai: (r.Extra === 'autoIncrement'),
+					allowNull: r.allowNull,
+					primaryKey: r.primaryKey || r.Key === 'PRI',
+					autoIncrement: r.autoIncrement || (r.Extra === 'autoIncrement'),
 					defaultValue: r.defaultValue
 				});
 			}
@@ -417,13 +417,10 @@ define(function (require, exports, module) {
 				
 			_nodeDomain.exec('list_foreign_keys', serverInfo.__id, table).done(function(response2)  {
 				var fks = response2[1],
-                    nameProp = 'Field',
-                    typeProp = 'Type',
+                    nameProp = 'name',
+                    typeProp = 'type',
 					fields_names = [];
-                if ( serverInfo.engine === "postgresql" ) {
-                    nameProp = 'field';
-                    typeProp = 'type';
-                }
+
 				var html = (function() {
 					var html  = '';
 					for(var i=0,il=rows.length,r,n,fk,pk;i<il;i++) {
@@ -1294,14 +1291,16 @@ define(function (require, exports, module) {
 					fields: fields
 				}, function(err, table, sql) {
 					if ( err ) {
-						Indicator.setText('Parse error:' + err);
+						Indicator.setText('Template Parse Error:' + err);
+						ResultSets.log('Template Parse Error', err);
 						return;
 					}
 					showSQLOnFile(sql);
 				});
 			}
 			catch(err){
-				Indicator.setText('Parse error:' + err.message);
+				Indicator.setText('showTableTemplate Error:' + err.message);
+				ResultSets.log('showTableTemplate Error', err);
 			}
 		});
 	}
@@ -1397,10 +1396,10 @@ define(function (require, exports, module) {
                     exportAllViews(sinfo, 'ALTER');
                 }
 				else if (act === 'create-table') {
-					showTableTemplate(sinfo, name, 'create-table');
+					showTableTemplate(sinfo, name, 'table-create');
 				}
 				else if (act === 'select-table') {
-					showTableTemplate(sinfo, name, 'select-table');
+					showTableTemplate(sinfo, name, 'table-select');
 				}
 
                 $(this).parent().remove();

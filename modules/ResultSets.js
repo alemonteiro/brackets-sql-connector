@@ -20,13 +20,20 @@ define( function( require, exports, module ) {
 		
 		ids = 0,
 		prefix = "brackets-sql-connector-result-set-",
-				
+
+		toJson = function(val, spacing) {
+			if ( val === undefined ) return 'undefined';
+			else if ( typeof val.toJSON === 'function') return val.toJSON(spacing);
+			else if ( typeof JSON === 'object' && typeof JSON.stringify === 'function' ) return JSON.stringify(val, spacing);
+			else if ( typeof val.toString === 'function' ) return val.toString();
+			else return val;
+		},
+
 		add_anchor = function(id) {
 			var li = '<li class="active">' +
 							'<a href="#" class="tab-anchor" data-target="#'+prefix + id +'">' + Strings.RESULT_SET + ' '  + id +'</a>' +
 							'<a href="#" class="close close-result-set">&times;</a>' +
 					'</li>';
-
 
 			$("#brackets-sql-connector-modifications-pane-anchor").removeClass("active").siblings().removeClass('active');
 			$("#brackets-sql-connector-modifications-pane-anchor").after($(li).addClass('active'));
@@ -34,8 +41,9 @@ define( function( require, exports, module ) {
 
 		add_log = function(title, extra, query) {
 			var dt = new Date(),
-				str = typeof extra === 'string' ? extra :
-						(typeof extra=== 'object' ? JSON.stringify(extra) : ''),
+				str = extra === undefined ? '' :
+					(typeof extra === 'string' ? extra : JSON.stringify(extra)),
+
 				log = '<tr>'+
 						'<td width="75px" class="data">' + dt.toLocaleTimeString() + '</td>' +
 						'<td width="125px">' + title + '</td>' +

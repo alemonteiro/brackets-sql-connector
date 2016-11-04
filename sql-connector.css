@@ -516,7 +516,7 @@ li.table.open > label::before {
 .brackets-sql-connector-result th {
 	padding: 2px;
 	border-collapse: collapse;
-	/*border: 1px solid #AAA;*/
+	border: 1px solid #AAA;
 	
   	-webkit-user-select: text; 
   	user-select: text;         

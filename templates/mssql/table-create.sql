@@ -1,5 +1,5 @@
 CREATE TABLE [{{name}}] AS (
 {{#fields}}
-	[{{name}}] {{type}} {{^allow_null}}NOT NULL{{/allow_null}} {{#pk}}PRIMARY KEY{{/pk}} {{#ai}}IDENTITY(1,1){{/ai}},
+	[{{name}}] {{type}} {{^allowNull}}NOT NULL{{/allowNull}} {{#primaryKey}}PRIMARY KEY{{/primaryKey}} {{#autoIncrement}}IDENTITY(1,1){{/autoIncrement}},
 {{/fields}}
 );

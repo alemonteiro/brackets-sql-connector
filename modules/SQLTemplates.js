@@ -107,7 +107,7 @@ define(function (require, exports, module) {
 			extension = 'sql';
 		}
 		if ( typeof this.loaded_templates[name] !== 'string' ) {
-			return this.loaded_templates(name, extension, callback);
+			return this.loadTemplate(name, extension, callback);
 		}
 		else {
 		 	return callback(false, this.loaded_templates[name]);
@@ -145,6 +145,7 @@ define(function (require, exports, module) {
 			loaded_engines[engine] = new SQLTemplates(engine);
 			loaded_engines[engine].listAllTemplates();
 		}
+		return loaded_engines[engine];
 	};
 
 	exports.getEngine = getEngine;

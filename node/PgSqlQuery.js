@@ -8,11 +8,11 @@ module.exports = {
 
 	showFields: function(db, table) {
 		return ('SELECT ' +
-					"c.column_name as Field, " +
-					"c.data_type as Type, " +
-					"c.character_maximum_length as Length,  " +
+					"c.column_name as name, " +
+					"c.data_type as type, " +
+					"c.character_maximum_length as length,  " +
 					"c.numeric_precision as precision ,  " +
-					"c.is_nullable,  " +
+					"c.is_nullable as allowNull,  " +
 					"'' as Key " +
 				"FROM   " +
 					"information_schema.columns c " +

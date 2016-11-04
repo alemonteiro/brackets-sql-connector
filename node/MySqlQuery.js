@@ -9,16 +9,17 @@ module.exports = {
 
 	showFields: function(db, table) {
 		return ('SELECT ' +
-					"c.column_name as field, " +
-					"c.data_type as type, " +
-					"c.character_maximum_length as length,  " +
-					"c.numeric_precision as precision ,  " +
-					"c.is_nullable as allowNull,  " +
-					"c.column_default as defaultValue,  " +
-					"c.chart_set_name as charSetName," +
-					"c.extra as extra",
-					"c.column_key as key, " +
-					"CASE WHEN extra = 'auto_increment' THEN 1 ELSE 0 END as autoIncrement " +
+					"c.column_name as `name`, " +
+					"c.DATA_TYPE as `type`, " +
+					"c.CHARACTER_MAXIMUM_LENGTH as `length`,  " +
+					"c.NUMERIC_PRECISION as `precision`,  " +
+					"c.IS_NULLABLE as `allowNull`,  " +
+					"c.COLUMN_DEFAULT as `defaultValue`,  " +
+					"c.CHARACTER_SET_NAME as `charSetName`, " +
+					"c.EXTRA as `extra`, " +
+					"c.COLUMN_KEY as `key`, " +
+					"CASE WHEN c.COLUMN_KEY = 'PRI' THEN 1 ELSE 0 END as primaryKey, " +
+					"CASE WHEN extra = 'auto_increment' THEN 1 ELSE 0 END as `autoIncrement` " +
 				"FROM   " +
 					"information_schema.columns c " +
 				"WHERE " +

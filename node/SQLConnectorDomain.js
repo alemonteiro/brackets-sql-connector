@@ -43,7 +43,7 @@
 
 			conn.query(query, function (err, rows, fields) {
 				if (err) {
-					clog("Query Error: ", err);
+					clog("Query Error: " + query, err);
 					callback(err, query);
 				}
 				return callback(0, [fields, rows]);
